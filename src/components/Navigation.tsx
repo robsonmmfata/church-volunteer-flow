@@ -16,11 +16,11 @@ export const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navItems = [
-    { path: "/", label: "Dashboard", icon: Home },
-    { path: "/voluntarios", label: "Voluntários", icon: Users },
-    { path: "/escalas", label: "Escalas", icon: Calendar },
-    { path: "/substituicoes", label: "Substituições", icon: RotateCcw },
-    { path: "/configuracoes", label: "Config", icon: Settings },
+    { path: "/admin", label: "Dashboard", icon: Home },
+    { path: "/admin/voluntarios", label: "Voluntários", icon: Users },
+    { path: "/admin/escalas", label: "Escalas", icon: Calendar },
+    { path: "/admin/substituicoes", label: "Substituições", icon: RotateCcw },
+    { path: "/admin/configuracoes", label: "Config", icon: Settings },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -30,12 +30,12 @@ export const Navigation = () => {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
+          <Link to="/admin" className="flex items-center space-x-2">
             <div className="bg-blue-600 text-white p-2 rounded-lg">
               <Users className="h-6 w-6" />
             </div>
             <span className="text-xl font-bold text-gray-900 hidden sm:block">
-              Voluntários Igreja
+              Admin - Voluntários
             </span>
           </Link>
 
@@ -57,15 +57,23 @@ export const Navigation = () => {
             })}
           </div>
 
-          {/* Mobile Menu Button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
+          <div className="flex items-center space-x-2">
+            <Link to="/">
+              <Button variant="outline" size="sm">
+                Ver Site
+              </Button>
+            </Link>
+            
+            {/* Mobile Menu Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
         </div>
 
         {/* Mobile Navigation */}
