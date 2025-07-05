@@ -1,8 +1,7 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Calendar, Heart, ArrowRight, CheckCircle } from "lucide-react";
+import { Users, Calendar, Heart, ArrowRight, CheckCircle, LogIn, UserPlus, User, Crown, Shield } from "lucide-react";
 
 const Landing = () => {
   return (
@@ -14,35 +13,53 @@ const Landing = () => {
             <div className="bg-blue-600 text-white p-2 rounded-lg">
               <Users className="h-6 w-6" />
             </div>
-            <span className="text-xl font-bold text-gray-900">
-              Voluntários Igreja
-            </span>
+            <span className="text-xl font-bold text-gray-900">Sistema de Voluntários</span>
           </div>
-          <Link to="/admin">
-            <Button variant="outline">
-              Área Administrativa
-            </Button>
-          </Link>
+          <div className="flex space-x-2">
+            <Link to="/login">
+              <Button variant="outline">
+                <LogIn className="h-4 w-4 mr-2" />
+                Entrar
+              </Button>
+            </Link>
+            <Link to="/voluntario/cadastro">
+              <Button>
+                <UserPlus className="h-4 w-4 mr-2" />
+                Quero me Voluntariar
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Seja um <span className="text-blue-600">Voluntário</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Faça parte da nossa equipe de voluntários e ajude a transformar vidas através do serviço ao próximo
-          </p>
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+        <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+          Faça Parte da Nossa
+          <span className="text-blue-600 block">Equipe de Voluntários</span>
+        </h1>
+        
+        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          Junte-se a nós e faça a diferença na vida das pessoas. 
+          Sua participação é essencial para o crescimento da nossa comunidade.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link to="/voluntario/cadastro">
-            <Button size="lg" className="text-lg px-8 py-4">
+            <Button size="lg" className="text-lg px-8 py-3">
+              <Heart className="h-5 w-5 mr-2" />
               Quero me Voluntariar
-              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+          </Link>
+          
+          <Link to="/login">
+            <Button size="lg" variant="outline" className="text-lg px-8 py-3">
+              <LogIn className="h-5 w-5 mr-2" />
+              Já tenho Cadastro
             </Button>
           </Link>
         </div>
-      </section>
+      </div>
 
       {/* Features */}
       <section className="py-16 px-4">
@@ -90,6 +107,72 @@ const Landing = () => {
           </div>
         </div>
       </section>
+
+      {/* Tipos de Acesso */}
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
+          Diferentes Níveis de Acesso
+        </h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-blue-100 text-blue-600 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <User className="h-8 w-8" />
+            </div>
+            <CardHeader>
+              <CardTitle>Voluntário</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Consulte suas escalas, informe disponibilidade e gerencie substituições.
+              </p>
+              <Link to="/login">
+                <Button variant="outline" className="w-full">
+                  Acesso Voluntário
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-green-100 text-green-600 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Crown className="h-8 w-8" />
+            </div>
+            <CardHeader>
+              <CardTitle>Líder</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Gerencie sua equipe, aprove substituições e organize escalas.
+              </p>
+              <Link to="/login">
+                <Button variant="outline" className="w-full">
+                  Acesso Líder
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="text-center p-6 hover:shadow-lg transition-shadow">
+            <div className="bg-purple-100 text-purple-600 p-3 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Shield className="h-8 w-8" />
+            </div>
+            <CardHeader>
+              <CardTitle>Administrador</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">
+                Controle total do sistema, cadastre voluntários e configure regras.
+              </p>
+              <Link to="/login">
+                <Button variant="outline" className="w-full">
+                  Acesso Admin
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
       {/* How it works */}
       <section className="py-16 px-4 bg-white">
