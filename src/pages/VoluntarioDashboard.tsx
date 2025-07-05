@@ -1,9 +1,11 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
   Clock, 
@@ -11,13 +13,69 @@ import {
   CheckCircle,
   AlertCircle,
   Home,
-  Settings
+  Settings,
+  LogOut
 } from "lucide-react";
 
 const VoluntarioDashboard = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso."
+    });
+  };
+
+  const handleAceitarSubstituicao = (index: number) => {
+    toast({
+      title: "Substituição aceita",
+      description: "Você aceitou participar desta escala."
+    });
+  };
+
+  const handleRecusarSubstituicao = (index: number) => {
+    toast({
+      title: "Substituição recusada",
+      description: "Você recusou esta solicitação."
+    });
+  };
+
+  const handleInformarDisponibilidade = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "Em breve você poderá informar sua disponibilidade."
+    });
+  };
+
+  const handleSolicitarSubstituicao = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "Em breve você poderá solicitar substituições."
+    });
+  };
+
+  const handleVerEscalaDoDia = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "Em breve você poderá ver a escala do dia."
+    });
+  };
+
+  const handleAtualizarPerfil = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "Atualização de perfil em breve."
+    });
+  };
+
   // Mock data - Em produção, viria de uma API
   const voluntario = {
-    nome: "João Silva",
+    nome: user?.nome || "Voluntário",
     proximasEscalas: [
       { data: "2024-01-07", culto: "Domingo 10h", status: "confirmado" },
       { data: "2024-01-14", culto: "Domingo 19h30", status: "confirmado" },
@@ -50,9 +108,13 @@ const VoluntarioDashboard = () => {
                 Início
               </Button>
             </Link>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleAtualizarPerfil}>
               <Settings className="h-4 w-4 mr-2" />
               Perfil
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleLogout}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
             </Button>
           </div>
         </div>
@@ -164,10 +226,10 @@ const VoluntarioDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="flex-1">
+                      <Button size="sm" className="flex-1" onClick={() => handleAceitarSubstituicao(index)}>
                         Aceitar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(index)}>
                         Recusar
                       </Button>
                     </div>
@@ -191,22 +253,22 @@ const VoluntarioDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button className="h-auto p-4 flex-col space-y-2">
+              <Button className="h-auto p-4 flex-col space-y-2" onClick={handleInformarDisponibilidade}>
                 <Calendar className="h-6 w-6" />
                 <span>Informar Disponibilidade</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleSolicitarSubstituicao}>
                 <Clock className="h-6 w-6" />
                 <span>Solicitar Substituição</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleVerEscalaDoDia}>
                 <Users className="h-6 w-6" />
                 <span>Ver Escala do Dia</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleAtualizarPerfil}>
                 <Settings className="h-6 w-6" />
                 <span>Atualizar Perfil</span>
               </Button>

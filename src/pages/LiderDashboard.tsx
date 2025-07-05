@@ -1,10 +1,10 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
   Clock, 
@@ -15,16 +15,66 @@ import {
   Settings,
   LogOut,
   UserCheck,
-  MessageCircle
+  MessageCircle,
+  Phone
 } from "lucide-react";
 
 const LiderDashboard = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso."
+    });
+  };
+
+  const handleAprovarSubstituicao = (index: number) => {
+    toast({
+      title: "Substituição aprovada",
+      description: "A substituição foi aprovada com sucesso."
+    });
+  };
+
+  const handleRecusarSubstituicao = (index: number) => {
+    toast({
+      title: "Substituição recusada",
+      description: "A substituição foi recusada."
+    });
+  };
+
+  const handleContatar = (nome: string, celular: string) => {
+    const url = `https://wa.me/${celular.replace(/\D/g, '')}?text=Olá ${nome}, tudo bem?`;
+    window.open(url, '_blank');
+  };
+
+  const handleGerenciarEscalas = () => {
+    navigate('/admin/escalas');
+  };
+
+  const handleConvocarVoluntarios = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "Em breve você poderá convocar voluntários diretamente."
+    });
+  };
+
+  const handleEnviarAvisos = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento", 
+      description: "Em breve você poderá enviar avisos em massa."
+    });
+  };
+
+  const handleConfiguracoes = () => {
+    toast({
+      title: "Funcionalidade em desenvolvimento",
+      description: "Configurações do perfil em breve."
+    });
   };
 
   // Mock data para o líder
@@ -73,7 +123,7 @@ const LiderDashboard = () => {
                 Início
               </Button>
             </Link>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleConfiguracoes}>
               <Settings className="h-4 w-4 mr-2" />
               Perfil
             </Button>
@@ -215,10 +265,10 @@ const LiderDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="flex-1">
+                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(index)}>
                         Aprovar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1">
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(index)}>
                         Recusar
                       </Button>
                     </div>
@@ -253,8 +303,16 @@ const LiderDashboard = () => {
                       {voluntario.status}
                     </Badge>
                   </div>
-                  <p className="text-sm text-gray-600 mb-3">{voluntario.celular}</p>
-                  <Button size="sm" variant="outline" className="w-full">
+                  <p className="text-sm text-gray-600 mb-3 flex items-center">
+                    <Phone className="h-3 w-3 mr-1" />
+                    {voluntario.celular}
+                  </p>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => handleContatar(voluntario.nome, voluntario.celular)}
+                  >
                     <MessageCircle className="h-3 w-3 mr-1" />
                     Contatar
                   </Button>
@@ -271,22 +329,22 @@ const LiderDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button className="h-auto p-4 flex-col space-y-2">
+              <Button className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarEscalas}>
                 <Calendar className="h-6 w-6" />
                 <span>Gerenciar Escalas</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleConvocarVoluntarios}>
                 <Users className="h-6 w-6" />
                 <span>Convocar Voluntários</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleEnviarAvisos}>
                 <MessageCircle className="h-6 w-6" />
                 <span>Enviar Avisos</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2">
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleConfiguracoes}>
                 <Settings className="h-6 w-6" />
                 <span>Configurações</span>
               </Button>
