@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -52,28 +53,6 @@ const LiderDashboard = () => {
     window.open(url, '_blank');
   };
 
-  const handleGerenciarEscalas = () => {
-    navigate('/admin/escalas');
-  };
-
-  const handleConvocarVoluntarios = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "Em breve você poderá convocar voluntários diretamente."
-    });
-  };
-
-  const handleEnviarAvisos = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento", 
-      description: "Em breve você poderá enviar avisos em massa."
-    });
-  };
-
-  const handleConfiguracoes = () => {
-    navigate('/lider/perfil');
-  };
-
   // Mock data para o líder
   const liderData = {
     proximasEscalas: [
@@ -120,10 +99,12 @@ const LiderDashboard = () => {
                 Início
               </Button>
             </Link>
-            <Button variant="outline" size="sm" onClick={handleConfiguracoes}>
-              <Settings className="h-4 w-4 mr-2" />
-              Perfil
-            </Button>
+            <Link to="/lider/perfil">
+              <Button variant="outline" size="sm">
+                <Settings className="h-4 w-4 mr-2" />
+                Perfil
+              </Button>
+            </Link>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               <LogOut className="h-4 w-4 mr-2" />
               Sair
@@ -326,25 +307,29 @@ const LiderDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarEscalas}>
-                <Calendar className="h-6 w-6" />
-                <span>Gerenciar Escalas</span>
-              </Button>
+              <Link to="/admin/escalas">
+                <Button className="h-auto p-4 flex-col space-y-2 w-full">
+                  <Calendar className="h-6 w-6" />
+                  <span>Gerenciar Escalas</span>
+                </Button>
+              </Link>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleConvocarVoluntarios}>
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => toast({ title: "Em desenvolvimento", description: "Funcionalidade será implementada em breve." })}>
                 <Users className="h-6 w-6" />
                 <span>Convocar Voluntários</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleEnviarAvisos}>
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => toast({ title: "Em desenvolvimento", description: "Funcionalidade será implementada em breve." })}>
                 <MessageCircle className="h-6 w-6" />
                 <span>Enviar Avisos</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleConfiguracoes}>
-                <Settings className="h-6 w-6" />
-                <span>Configurações</span>
-              </Button>
+              <Link to="/lider/perfil">
+                <Button variant="outline" className="h-auto p-4 flex-col space-y-2 w-full">
+                  <Settings className="h-6 w-6" />
+                  <span>Configurações</span>
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>

@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,22 +66,6 @@ const Index = () => {
         title: "Erro ao recusar substituição",
       });
     }
-  };
-
-  const handleGerenciarVoluntarios = () => {
-    navigate('/admin/voluntarios');
-  };
-
-  const handleGerenciarEscalas = () => {
-    navigate('/admin/escalas');
-  };
-
-  const handleGerenciarSubstituicoes = () => {
-    navigate('/admin/substituicoes');
-  };
-
-  const handleConfiguracoes = () => {
-    navigate('/admin/configuracoes');
   };
 
   // Mock data - Em produção, viria de uma API
@@ -244,22 +229,22 @@ const Index = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarVoluntarios}>
+              <Button className="h-auto p-4 flex-col space-y-2" onClick={() => navigate('/admin/voluntarios')}>
                 <Users className="h-6 w-6" />
                 <span>Gerenciar Voluntários</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarEscalas}>
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => navigate('/admin/escalas')}>
                 <Calendar className="h-6 w-6" />
                 <span>Gerenciar Escalas</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarSubstituicoes}>
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => navigate('/admin/substituicoes')}>
                 <Clock className="h-6 w-6" />
                 <span>Ver Substituições</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleConfiguracoes}>
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => navigate('/admin/configuracoes')}>
                 <Settings className="h-6 w-6" />
                 <span>Configurações</span>
               </Button>

@@ -135,7 +135,7 @@ const App = () => (
             <Route 
               path="/admin/escalas" 
               element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
+                <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
                   <AdminLayout><Escalas /></AdminLayout>
                 </ProtectedRoute>
               } 
@@ -143,7 +143,7 @@ const App = () => (
             <Route 
               path="/admin/escalas/nova" 
               element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
+                <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
                   <AdminLayout><NovaEscala /></AdminLayout>
                 </ProtectedRoute>
               } 
@@ -151,7 +151,7 @@ const App = () => (
             <Route 
               path="/admin/substituicoes" 
               element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
+                <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
                   <AdminLayout><Substituicoes /></AdminLayout>
                 </ProtectedRoute>
               } 
