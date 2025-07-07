@@ -12,7 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, User, Bell, Phone, Mail, MapPin, Calendar } from "lucide-react";
 import { toast } from "sonner";
-import WhatsAppNotifications from "@/components/WhatsAppNotifications";
 
 const PerfilUsuario = () => {
   const { user } = useAuth();
@@ -258,17 +257,6 @@ const PerfilUsuario = () => {
                 </div>
               </CardContent>
             </Card>
-
-            {user?.tipo === "administrador" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Configurações Avançadas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <WhatsAppNotifications />
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
       </div>

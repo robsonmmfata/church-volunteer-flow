@@ -8,7 +8,7 @@ export interface User {
   nome: string;
   email: string;
   tipo: UserType;
-  celular?: string;
+  telefone?: string;
 }
 
 interface AuthContextType {
@@ -24,7 +24,7 @@ interface RegisterData {
   email: string;
   password: string;
   tipo: UserType;
-  celular?: string;
+  telefone?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -56,9 +56,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Simulação de login (em produção, seria uma chamada para API)
     // Usuários de exemplo
     const mockUsers = [
-      { id: '1', nome: 'Admin Sistema', email: 'admin@igreja.com', tipo: 'administrador' as UserType },
-      { id: '2', nome: 'João Líder', email: 'joao@igreja.com', tipo: 'lider' as UserType, celular: '11999999999' },
-      { id: '3', nome: 'Maria Voluntária', email: 'maria@igreja.com', tipo: 'voluntario' as UserType, celular: '11888888888' },
+      { id: '1', nome: 'Admin Sistema', email: 'admin@igreja.com', tipo: 'administrador' as UserType, telefone: '11999999999' },
+      { id: '2', nome: 'João Líder', email: 'joao@igreja.com', tipo: 'lider' as UserType, telefone: '11999999999' },
+      { id: '3', nome: 'Maria Voluntária', email: 'maria@igreja.com', tipo: 'voluntario' as UserType, telefone: '11888888888' },
     ];
 
     const foundUser = mockUsers.find(u => u.email === email && u.tipo === tipo);
@@ -83,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       nome: userData.nome,
       email: userData.email,
       tipo: userData.tipo,
-      celular: userData.celular,
+      telefone: userData.telefone,
     };
 
     setUser(newUser);
