@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Table,
   TableBody,
@@ -12,11 +13,20 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Calendar, Users, Clock } from "lucide-react";
+import { Plus, Calendar, Users, Clock, Edit, Trash2, Eye } from "lucide-react";
+import { toast } from "sonner";
+
+interface Escala {
+  id: number;
+  data: string;
+  culto: string;
+  lider: string;
+  voluntarios: string[];
+  status: string;
+}
 
 const Escalas = () => {
-  // Mock data - Em produção, viria de uma API
-  const escalas = [
+  const [escalas, setEscalas] = useState<Escala[]>([
     {
       id: 1,
       data: "2024-01-07",
@@ -41,7 +51,10 @@ const Escalas = () => {
       voluntarios: ["Ana Santos", "Maria Silva", "Pedro Costa", "Lucia Oliveira", "João Silva"],
       status: "Completa"
     }
-  ];
+  ]);
+
+  const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -64,6 +77,23 @@ const Escalas = () => {
     });
   };
 
+  const handleEdit = (escala: Escala) => {
+    toast.info("Funcionalidade de edição em desenvolvimento");
+    console.log("Editando escala:", escala);
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm("Tem certeza que deseja excluir esta escala?")) {
+      setEscalas(prev => prev.filter(escala => escala.id !== id));
+      toast.success("Escala excluída com sucesso!");
+    }
+  };
+
+  const handleViewDetails = (escala: Escala) => {
+    setSelectedEscala(escala);
+    setIsDetailDialogOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -72,7 +102,7 @@ const Escalas = () => {
             <h1 className="text-3xl font-bold text-gray-900">Escalas</h1>
             <p className="text-gray-600">Gerencie as escalas por culto e data</p>
           </div>
-          <Link to="/escalas/nova">
+          <Link to="/admin/escalas/nova">
             <Button className="flex items-center space-x-2">
               <Plus className="h-4 w-4" />
               <span>Nova Escala</span>
@@ -244,11 +274,29 @@ const Escalas = () => {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEdit(escala)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
                             Editar
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewDetails(escala)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
                             Ver Detalhes
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(escala.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Excluir
                           </Button>
                         </div>
                       </TableCell>
@@ -259,6 +307,46 @@ const Escalas = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Dialog de Detalhes */}
+        <Dialog open={isDetailDialogOpen} onOpenChange={setIsDetailDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Detalhes da Escala</DialogTitle>
+            </DialogHeader>
+            {selectedEscala && (
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium">{selectedEscala.culto}</h4>
+                  <p className="text-sm text-gray-600">
+                    {formatDate(selectedEscala.data)}
+                  </p>
+                </div>
+                
+                <div>
+                  <p className="text-sm font-medium text-blue-600">
+                    Líder: {selectedEscala.lider}
+                  </p>
+                </div>
+
+                <div>
+                  <h5 className="font-medium mb-2">Voluntários escalados:</h5>
+                  <div className="space-y-1">
+                    {selectedEscala.voluntarios.map((voluntario, index) => (
+                      <div key={index} className="text-sm bg-gray-100 px-3 py-2 rounded">
+                        {voluntario}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <Badge variant={getStatusColor(selectedEscala.status)}>
+                  {selectedEscala.status}
+                </Badge>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { 
   Table,
   TableBody,
@@ -18,9 +17,9 @@ import { toast } from "sonner";
 
 const Substituicoes = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Mock data - Em produção, viria de uma API
-  const substituicoes = [
+  
+  // Estado real para substituições
+  const [substituicoes, setSubstituicoes] = useState([
     {
       id: 1,
       data: "2024-01-21",
@@ -51,7 +50,7 @@ const Substituicoes = () => {
       status: "rejeitado",
       datasolicitacao: "2024-01-16"
     }
-  ];
+  ]);
 
   const filteredSubstituicoes = substituicoes.filter(sub =>
     sub.voluntarioOriginal.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -60,13 +59,25 @@ const Substituicoes = () => {
   );
 
   const handleAprovar = (id: number) => {
+    setSubstituicoes(prev => 
+      prev.map(sub => 
+        sub.id === id 
+          ? { ...sub, status: "aprovado" }
+          : sub
+      )
+    );
     toast.success("Substituição aprovada com sucesso!");
-    console.log("Aprovando substituição:", id);
   };
 
   const handleRejeitar = (id: number) => {
+    setSubstituicoes(prev => 
+      prev.map(sub => 
+        sub.id === id 
+          ? { ...sub, status: "rejeitado" }
+          : sub
+      )
+    );
     toast.error("Substituição rejeitada");
-    console.log("Rejeitando substituição:", id);
   };
 
   const getStatusBadge = (status: string) => {

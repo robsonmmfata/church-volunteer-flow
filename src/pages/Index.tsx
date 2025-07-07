@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
 import { 
   Calendar, 
   Clock, 
@@ -10,69 +11,45 @@ import {
   CheckCircle,
   Settings
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   
-  const handleAprovarSubstituicao = async (index: number) => {
-    try {
-      // Simular aprovação via webhook
-      const response = await fetch('/webhook/substituicao-aprovada', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'no-cors',
-        body: JSON.stringify({
-          action: 'approve_substitution',
-          index: index,
-          timestamp: new Date().toISOString()
-        }),
-      });
-
-      toast({
-        title: "Substituição aprovada com sucesso!",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao aprovar substituição",
-      });
-    }
+  const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
+    { 
+      id: 1,
+      data: "2024-01-21", 
+      culto: "Domingo 10h", 
+      voluntarioOriginal: "Maria Santos", 
+      voluntarioSubstituto: "João Silva" 
+    },
+    { 
+      id: 2,
+      data: "2024-01-24", 
+      culto: "Quarta 20h", 
+      voluntarioOriginal: "Pedro Lima", 
+      voluntarioSubstituto: "Ana Costa" 
+    },
+  ]);
+  
+  const handleAprovarSubstituicao = (id: number) => {
+    setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
+    toast.success("Substituição aprovada com sucesso!");
+    console.log("Substituição aprovada:", id);
   };
 
-  const handleRecusarSubstituicao = async (index: number) => {
-    try {
-      // Simular recusa via webhook
-      const response = await fetch('/webhook/substituicao-recusada', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        mode: 'no-cors',
-        body: JSON.stringify({
-          action: 'reject_substitution', 
-          index: index,
-          timestamp: new Date().toISOString()
-        }),
-      });
-
-      toast({
-        title: "Substituição recusada",
-      });
-    } catch (error) {
-      toast({
-        title: "Erro ao recusar substituição",
-      });
-    }
+  const handleRecusarSubstituicao = (id: number) => {
+    setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
+    toast.error("Substituição recusada");
+    console.log("Substituição recusada:", id);
   };
 
   // Mock data - Em produção, viria de uma API
   const estatisticas = {
     totalVoluntarios: 50,
     escalasEsteMes: 20,
-    substituicoesPendentes: 5,
+    substituicoesPendentes: substituicoesPendentes.length,
     taxaPresenca: 95
   };
 
@@ -80,11 +57,6 @@ const Index = () => {
     { data: "2024-01-07", culto: "Domingo 10h", voluntarios: 5, status: "completa" },
     { data: "2024-01-10", culto: "Quarta 20h", voluntarios: 3, status: "incompleta" },
     { data: "2024-01-14", culto: "Domingo 19h30", voluntarios: 5, status: "completa" },
-  ];
-
-  const substituicoesPendentes = [
-    { data: "2024-01-21", culto: "Domingo 10h", voluntarioOriginal: "Maria Santos", voluntarioSubstituto: "João Silva" },
-    { data: "2024-01-24", culto: "Quarta 20h", voluntarioOriginal: "Pedro Lima", voluntarioSubstituto: "Ana Costa" },
   ];
 
   return (
@@ -187,8 +159,8 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {substituicoesPendentes.map((substituicao, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
+                {substituicoesPendentes.map((substituicao) => (
+                  <div key={substituicao.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <p className="font-medium">{substituicao.culto}</p>
@@ -202,10 +174,10 @@ const Index = () => {
                       <Badge variant="secondary">Pendente</Badge>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(index)}>
+                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(substituicao.id)}>
                         Aprovar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(index)}>
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(substituicao.id)}>
                         Recusar
                       </Button>
                     </div>

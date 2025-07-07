@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Table,
   TableBody,
@@ -13,13 +16,26 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Search, UserCheck, Phone, Mail } from "lucide-react";
+import { Plus, Search, UserCheck, Phone, Mail, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
+interface Voluntario {
+  id: number;
+  nome: string;
+  sexo: string;
+  celular: string;
+  email: string;
+  conjuge: string;
+  celularConjuge: string;
+  lider: boolean;
+}
 
 const Voluntarios = () => {
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Mock data - Em produção, viria de uma API
-  const voluntarios = [
+  const [editingVoluntario, setEditingVoluntario] = useState<Voluntario | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  
+  const [voluntarios, setVoluntarios] = useState<Voluntario[]>([
     {
       id: 1,
       nome: "João Silva",
@@ -50,12 +66,38 @@ const Voluntarios = () => {
       celularConjuge: "(11) 99999-5555",
       lider: true
     },
-  ];
+  ]);
 
   const filteredVoluntarios = voluntarios.filter(voluntario =>
     voluntario.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     voluntario.celular.includes(searchTerm)
   );
+
+  const handleEdit = (voluntario: Voluntario) => {
+    setEditingVoluntario(voluntario);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingVoluntario) return;
+    
+    setVoluntarios(prev => 
+      prev.map(vol => 
+        vol.id === editingVoluntario.id ? editingVoluntario : vol
+      )
+    );
+    
+    setIsEditDialogOpen(false);
+    setEditingVoluntario(null);
+    toast.success("Voluntário atualizado com sucesso!");
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm("Tem certeza que deseja excluir este voluntário?")) {
+      setVoluntarios(prev => prev.filter(vol => vol.id !== id));
+      toast.success("Voluntário excluído com sucesso!");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -65,7 +107,7 @@ const Voluntarios = () => {
             <h1 className="text-3xl font-bold text-gray-900">Voluntários</h1>
             <p className="text-gray-600">Gerencie o cadastro de voluntários</p>
           </div>
-          <Link to="/voluntarios/novo">
+          <Link to="/admin/voluntarios/novo">
             <Button className="flex items-center space-x-2">
               <Plus className="h-4 w-4" />
               <span>Novo Voluntário</span>
@@ -192,9 +234,24 @@ const Voluntarios = () => {
                         )}
                       </TableCell>
                       <TableCell>
-                        <Button variant="outline" size="sm">
-                          Editar
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleEdit(voluntario)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDelete(voluntario.id)}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Excluir
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -203,6 +260,124 @@ const Voluntarios = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Dialog de Edição */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Editar Voluntário</DialogTitle>
+            </DialogHeader>
+            {editingVoluntario && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="nome">Nome</Label>
+                  <Input
+                    id="nome"
+                    value={editingVoluntario.nome}
+                    onChange={(e) => setEditingVoluntario({
+                      ...editingVoluntario,
+                      nome: e.target.value
+                    })}
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="sexo">Sexo</Label>
+                  <Select 
+                    value={editingVoluntario.sexo} 
+                    onValueChange={(value) => setEditingVoluntario({
+                      ...editingVoluntario,
+                      sexo: value
+                    })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Masculino">Masculino</SelectItem>
+                      <SelectItem value="Feminino">Feminino</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="celular">Celular</Label>
+                  <Input
+                    id="celular"
+                    value={editingVoluntario.celular}
+                    onChange={(e) => setEditingVoluntario({
+                      ...editingVoluntario,
+                      celular: e.target.value
+                    })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={editingVoluntario.email}
+                    onChange={(e) => setEditingVoluntario({
+                      ...editingVoluntario,
+                      email: e.target.value
+                    })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="conjuge">Cônjuge</Label>
+                  <Input
+                    id="conjuge"
+                    value={editingVoluntario.conjuge}
+                    onChange={(e) => setEditingVoluntario({
+                      ...editingVoluntario,
+                      conjuge: e.target.value
+                    })}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="celularConjuge">Celular do Cônjuge</Label>
+                  <Input
+                    id="celularConjuge"
+                    value={editingVoluntario.celularConjuge}
+                    onChange={(e) => setEditingVoluntario({
+                      ...editingVoluntario,
+                      celularConjuge: e.target.value
+                    })}
+                  />
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="lider"
+                    checked={editingVoluntario.lider}
+                    onChange={(e) => setEditingVoluntario({
+                      ...editingVoluntario,
+                      lider: e.target.checked
+                    })}
+                  />
+                  <Label htmlFor="lider">É líder</Label>
+                </div>
+
+                <div className="flex space-x-2">
+                  <Button onClick={handleSaveEdit} className="flex-1">
+                    Salvar
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsEditDialogOpen(false)}
+                    className="flex-1"
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

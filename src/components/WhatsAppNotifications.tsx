@@ -73,6 +73,7 @@ const WhatsAppNotifications = () => {
       });
 
       toast.success("Notificação de teste enviada! Verifique o WhatsApp do número informado.");
+      console.log("Webhook chamado com sucesso");
     } catch (error) {
       console.error("Erro ao enviar notificação:", error);
       toast.error("Erro ao enviar notificação. Verifique a URL do webhook.");
@@ -84,11 +85,11 @@ const WhatsAppNotifications = () => {
   const sendNotificationToUser = async (phoneNumber: string, message: string, type: string) => {
     if (!webhookUrl) {
       console.error("Webhook URL não configurada");
-      return;
+      return false;
     }
 
     try {
-      await fetch(webhookUrl, {
+      const response = await fetch(webhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,8 +105,10 @@ const WhatsAppNotifications = () => {
       });
       
       console.log(`Notificação ${type} enviada para ${phoneNumber}`);
+      return true;
     } catch (error) {
       console.error("Erro ao enviar notificação:", error);
+      return false;
     }
   };
 
@@ -120,6 +123,25 @@ const WhatsAppNotifications = () => {
     toast.success("Template atualizado!");
   };
 
+  const saveWebhookUrl = () => {
+    if (!webhookUrl) {
+      toast.error("Digite uma URL válida");
+      return;
+    }
+    
+    // Salvar no localStorage para persistir
+    localStorage.setItem('whatsapp_webhook_url', webhookUrl);
+    toast.success("URL do webhook salva com sucesso!");
+  };
+
+  const loadWebhookUrl = () => {
+    const savedUrl = localStorage.getItem('whatsapp_webhook_url');
+    if (savedUrl) {
+      setWebhookUrl(savedUrl);
+      toast.info("URL do webhook carregada");
+    }
+  };
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case "escala": return "bg-blue-100 text-blue-800";
@@ -128,6 +150,11 @@ const WhatsAppNotifications = () => {
       default: return "bg-gray-100 text-gray-800";
     }
   };
+
+  // Carregar URL salva quando o componente carrega
+  useState(() => {
+    loadWebhookUrl();
+  });
 
   return (
     <div className="space-y-6">
@@ -145,13 +172,19 @@ const WhatsAppNotifications = () => {
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="webhook-url">URL do Webhook</Label>
-            <Input
-              id="webhook-url"
-              type="url"
-              placeholder="https://hooks.zapier.com/hooks/catch/..."
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
-            />
+            <div className="flex space-x-2">
+              <Input
+                id="webhook-url"
+                type="url"
+                placeholder="https://hooks.zapier.com/hooks/catch/..."
+                value={webhookUrl}
+                onChange={(e) => setWebhookUrl(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={saveWebhookUrl} variant="outline">
+                Salvar
+              </Button>
+            </div>
             <p className="text-sm text-gray-500 mt-1">
               Cole aqui a URL do webhook fornecida pelo Zapier, Make ou seu serviço escolhido
             </p>
@@ -227,6 +260,29 @@ const WhatsAppNotifications = () => {
         </CardContent>
       </Card>
 
+      {/* Status da Integração */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Status da Integração</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span>Webhook URL:</span>
+              <Badge variant={webhookUrl ? "default" : "destructive"}>
+                {webhookUrl ? "Configurado" : "Não Configurado"}
+              </Badge>
+            </div>
+            <div className="flex items-center justify-between">
+              <span>Templates Ativos:</span>
+              <Badge variant="default">
+                {templates.filter(t => t.active).length} de {templates.length}
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Instruções de Configuração */}
       <Card>
         <CardHeader>
@@ -242,7 +298,7 @@ const WhatsAppNotifications = () => {
               <li>Acesse zapier.com e crie uma nova automação (Zap)</li>
               <li>Escolha "Webhooks by Zapier" como trigger</li>
               <li>Selecione "Catch Hook" e copie a URL fornecida</li>
-              <li>Cole a URL no campo acima</li>
+              <li>Cole a URL no campo acima e clique em "Salvar"</li>
               <li>Configure a ação para enviar WhatsApp (Twilio, ChatAPI, etc.)</li>
               <li>Teste a integração usando o botão "Enviar Teste"</li>
             </ol>
