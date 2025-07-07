@@ -19,6 +19,9 @@ import Configuracoes from "./pages/Configuracoes";
 import VoluntarioCadastro from "./pages/VoluntarioCadastro";
 import VoluntarioDashboard from "./pages/VoluntarioDashboard";
 import LiderDashboard from "./pages/LiderDashboard";
+import PerfilUsuario from "./pages/PerfilUsuario";
+import DisponibilidadeVoluntario from "./pages/DisponibilidadeVoluntario";
+import SolicitarSubstituicao from "./pages/SolicitarSubstituicao";
 import { Navigation } from "./components/Navigation";
 
 const queryClient = new QueryClient();
@@ -53,6 +56,30 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/voluntario/perfil" 
+              element={
+                <ProtectedRoute allowedUserTypes={['voluntario']}>
+                  <PerfilUsuario />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/voluntario/disponibilidade" 
+              element={
+                <ProtectedRoute allowedUserTypes={['voluntario']}>
+                  <DisponibilidadeVoluntario />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/voluntario/solicitar-substituicao" 
+              element={
+                <ProtectedRoute allowedUserTypes={['voluntario']}>
+                  <SolicitarSubstituicao />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Área do líder - protegida */}
             <Route 
@@ -63,6 +90,14 @@ const App = () => (
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/lider/perfil" 
+              element={
+                <ProtectedRoute allowedUserTypes={['lider']}>
+                  <PerfilUsuario />
+                </ProtectedRoute>
+              } 
+            />
             
             {/* Área administrativa - protegida */}
             <Route 
@@ -70,6 +105,14 @@ const App = () => (
               element={
                 <ProtectedRoute allowedUserTypes={['administrador']}>
                   <AdminLayout><Index /></AdminLayout>
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/perfil" 
+              element={
+                <ProtectedRoute allowedUserTypes={['administrador']}>
+                  <PerfilUsuario />
                 </ProtectedRoute>
               } 
             />

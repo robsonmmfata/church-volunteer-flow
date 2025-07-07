@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -46,17 +45,11 @@ const VoluntarioDashboard = () => {
   };
 
   const handleInformarDisponibilidade = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "Em breve você poderá informar sua disponibilidade."
-    });
+    navigate('/voluntario/disponibilidade');
   };
 
   const handleSolicitarSubstituicao = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "Em breve você poderá solicitar substituições."
-    });
+    navigate('/voluntario/solicitar-substituicao');
   };
 
   const handleVerEscalaDoDia = () => {
@@ -67,10 +60,7 @@ const VoluntarioDashboard = () => {
   };
 
   const handleAtualizarPerfil = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "Atualização de perfil em breve."
-    });
+    navigate('/voluntario/perfil');
   };
 
   // Mock data - Em produção, viria de uma API

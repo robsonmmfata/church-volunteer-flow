@@ -1,175 +1,187 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { 
-  Users, 
   Calendar, 
   Clock, 
-  AlertTriangle,
-  Plus,
-  Eye,
+  Users, 
   CheckCircle,
-  XCircle
+  Settings
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toast } = useToast();
+  
+  const handleAprovarSubstituicao = async (index: number) => {
+    try {
+      // Simular aprovação via webhook
+      const response = await fetch('/webhook/substituicao-aprovada', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'no-cors',
+        body: JSON.stringify({
+          action: 'approve_substitution',
+          index: index,
+          timestamp: new Date().toISOString()
+        }),
+      });
 
-  const handleNovoVoluntario = () => {
-    navigate('/admin/voluntarios/novo');
+      toast({
+        title: "Substituição aprovada com sucesso!",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao aprovar substituição",
+      });
+    }
   };
 
-  const handleVerVoluntarios = () => {
+  const handleRecusarSubstituicao = async (index: number) => {
+    try {
+      // Simular recusa via webhook
+      const response = await fetch('/webhook/substituicao-recusada', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        mode: 'no-cors',
+        body: JSON.stringify({
+          action: 'reject_substitution', 
+          index: index,
+          timestamp: new Date().toISOString()
+        }),
+      });
+
+      toast({
+        title: "Substituição recusada",
+      });
+    } catch (error) {
+      toast({
+        title: "Erro ao recusar substituição",
+      });
+    }
+  };
+
+  const handleGerenciarVoluntarios = () => {
     navigate('/admin/voluntarios');
   };
 
-  const handleNovaEscala = () => {
-    navigate('/admin/escalas/nova');
-  };
-
-  const handleVerEscalas = () => {
+  const handleGerenciarEscalas = () => {
     navigate('/admin/escalas');
   };
 
-  const handleVerSubstituicoes = () => {
+  const handleGerenciarSubstituicoes = () => {
     navigate('/admin/substituicoes');
   };
 
-  const handleAprovarSubstituicao = (id: number) => {
-    toast({
-      title: "Substituição aprovada",
-      description: "A substituição foi aprovada com sucesso."
-    });
+  const handleConfiguracoes = () => {
+    navigate('/admin/configuracoes');
   };
 
-  const handleRejeitarSubstituicao = (id: number) => {
-    toast({
-      title: "Substituição rejeitada",
-      description: "A substituição foi rejeitada."
-    });
+  // Mock data - Em produção, viria de uma API
+  const estatisticas = {
+    totalVoluntarios: 50,
+    escalasEsteMes: 20,
+    substituicoesPendentes: 5,
+    taxaPresenca: 95
   };
 
-  // Mock data - Em produção viria de uma API
-  const dashboardData = {
-    totalVoluntarios: 24,
-    escalasAtivas: 8,
-    substituicoesPendentes: 3,
-    proximosEventos: 12,
-    proximasEscalas: [
-      { id: 1, data: "2024-01-07", culto: "Domingo 10h", lider: "João Silva", voluntarios: 5, status: "completa" },
-      { id: 2, data: "2024-01-10", culto: "Quarta 20h", lider: "Maria Santos", voluntarios: 3, status: "incompleta" },
-      { id: 3, data: "2024-01-14", culto: "Domingo 19h30", lider: "Pedro Lima", voluntarios: 5, status: "completa" },
-    ],
-    substituicoesPendentesLista: [
-      { id: 1, solicitante: "Ana Costa", culto: "Domingo 10h", data: "2024-01-21", motivo: "Viagem" },
-      { id: 2, solicitante: "Carlos Silva", culto: "Quarta 20h", data: "2024-01-24", motivo: "Trabalho" },
-    ],
-    voluntariosRecentes: [
-      { nome: "Maria Oliveira", cadastro: "2024-01-01", status: "ativo" },
-      { nome: "João Santos", cadastro: "2024-01-02", status: "pendente" },
-      { nome: "Ana Silva", cadastro: "2024-01-03", status: "ativo" },
-    ]
-  };
+  const proximasEscalas = [
+    { data: "2024-01-07", culto: "Domingo 10h", voluntarios: 5, status: "completa" },
+    { data: "2024-01-10", culto: "Quarta 20h", voluntarios: 3, status: "incompleta" },
+    { data: "2024-01-14", culto: "Domingo 19h30", voluntarios: 5, status: "completa" },
+  ];
+
+  const substituicoesPendentes = [
+    { data: "2024-01-21", culto: "Domingo 10h", voluntarioOriginal: "Maria Santos", voluntarioSubstituto: "João Silva" },
+    { data: "2024-01-24", culto: "Quarta 20h", voluntarioOriginal: "Pedro Lima", voluntarioSubstituto: "Ana Costa" },
+  ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Dashboard Administrativo</h1>
-          <p className="text-gray-600">Bem-vindo, {user?.nome}! Gerencie escalas e voluntários.</p>
+          <p className="text-gray-600">Visão geral do sistema de escalas</p>
         </div>
 
         {/* Cards de Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Voluntários</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.totalVoluntarios}</div>
-              <p className="text-xs text-muted-foreground">
-                +2 desde a semana passada
-              </p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Voluntários</p>
+                  <p className="text-2xl font-bold">{estatisticas.totalVoluntarios}</p>
+                </div>
+                <Users className="h-8 w-8 text-blue-600" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Escalas Ativas</CardTitle>
-              <Calendar className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.escalasAtivas}</div>
-              <p className="text-xs text-muted-foreground">
-                Este mês
-              </p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Escalas Este Mês</p>
+                  <p className="text-2xl font-bold">{estatisticas.escalasEsteMes}</p>
+                </div>
+                <Calendar className="h-8 w-8 text-green-600" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Substituições</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.substituicoesPendentes}</div>
-              <p className="text-xs text-muted-foreground">
-                Aguardando aprovação
-              </p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Substituições Pendentes</p>
+                  <p className="text-2xl font-bold text-yellow-600">{estatisticas.substituicoesPendentes}</p>
+                </div>
+                <Clock className="h-8 w-8 text-yellow-600" />
+              </div>
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Próximos Eventos</CardTitle>
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{dashboardData.proximosEventos}</div>
-              <p className="text-xs text-muted-foreground">
-                Nos próximos 30 dias
-              </p>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Taxa de Presença</p>
+                  <p className="text-2xl font-bold text-green-600">{estatisticas.taxaPresenca}%</p>
+                </div>
+                <CheckCircle className="h-8 w-8 text-green-600" />
+              </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Próximas Escalas */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Próximas Escalas</CardTitle>
-                <CardDescription>Escalas programadas para os próximos dias</CardDescription>
-              </div>
-              <div className="flex space-x-2">
-                <Button size="sm" onClick={handleNovaEscala}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Nova
-                </Button>
-                <Button size="sm" variant="outline" onClick={handleVerEscalas}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver Todas
-                </Button>
-              </div>
+            <CardHeader>
+              <CardTitle>Próximas Escalas</CardTitle>
+              <CardDescription>
+                Escalas programadas para os próximos dias
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {dashboardData.proximasEscalas.map((escala) => (
-                  <div key={escala.id} className="flex items-center justify-between p-3 border rounded-lg">
+                {proximasEscalas.map((escala, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{escala.culto}</p>
                       <p className="text-sm text-gray-600">
-                        {new Date(escala.data).toLocaleDateString('pt-BR')} - Líder: {escala.lider}
+                        {new Date(escala.data).toLocaleDateString('pt-BR')}
                       </p>
-                      <p className="text-sm text-blue-600">{escala.voluntarios} voluntários</p>
+                      <p className="text-sm text-blue-600">
+                        {escala.voluntarios} voluntários escalados
+                      </p>
                     </div>
                     <Badge variant={escala.status === 'completa' ? 'default' : 'destructive'}>
                       {escala.status === 'completa' ? 'Completa' : 'Incompleta'}
@@ -182,41 +194,40 @@ const Index = () => {
 
           {/* Substituições Pendentes */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Substituições Pendentes</CardTitle>
-                <CardDescription>Solicitações aguardando aprovação</CardDescription>
-              </div>
-              <Button size="sm" variant="outline" onClick={handleVerSubstituicoes}>
-                <Eye className="h-4 w-4 mr-2" />
-                Ver Todas
-              </Button>
+            <CardHeader>
+              <CardTitle>Substituições Pendentes</CardTitle>
+              <CardDescription>
+                Solicitações que precisam de aprovação
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {dashboardData.substituicoesPendentesLista.map((sub) => (
-                  <div key={sub.id} className="p-3 border rounded-lg">
-                    <div className="flex items-start justify-between mb-2">
+                {substituicoesPendentes.map((substituicao, index) => (
+                  <div key={index} className="p-4 border rounded-lg">
+                    <div className="flex items-start justify-between mb-3">
                       <div>
-                        <p className="font-medium">{sub.solicitante}</p>
-                        <p className="text-sm text-gray-600">{sub.culto} - {new Date(sub.data).toLocaleDateString('pt-BR')}</p>
-                        <p className="text-sm text-gray-500">Motivo: {sub.motivo}</p>
+                        <p className="font-medium">{substituicao.culto}</p>
+                        <p className="text-sm text-gray-600">
+                          {new Date(substituicao.data).toLocaleDateString('pt-BR')}
+                        </p>
+                        <p className="text-sm text-blue-600">
+                          {substituicao.voluntarioOriginal} → {substituicao.voluntarioSubstituto}
+                        </p>
                       </div>
+                      <Badge variant="secondary">Pendente</Badge>
                     </div>
-                    <div className="flex space-x-2 mt-3">
-                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(sub.id)}>
-                        <CheckCircle className="h-3 w-3 mr-1" />
+                    <div className="flex space-x-2">
+                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(index)}>
                         Aprovar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRejeitarSubstituicao(sub.id)}>
-                        <XCircle className="h-3 w-3 mr-1" />
-                        Rejeitar
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(index)}>
+                        Recusar
                       </Button>
                     </div>
                   </div>
                 ))}
                 
-                {dashboardData.substituicoesPendentesLista.length === 0 && (
+                {substituicoesPendentes.length === 0 && (
                   <p className="text-gray-500 text-center py-4">
                     Nenhuma substituição pendente
                   </p>
@@ -226,76 +237,35 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Voluntários Recentes e Ações Rápidas */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Voluntários Recentes */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Voluntários Recentes</CardTitle>
-                <CardDescription>Últimos cadastros realizados</CardDescription>
-              </div>
-              <div className="flex space-x-2">
-                <Button size="sm" onClick={handleNovoVoluntario}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo
-                </Button>
-                <Button size="sm" variant="outline" onClick={handleVerVoluntarios}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Ver Todos
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {dashboardData.voluntariosRecentes.map((voluntario, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{voluntario.nome}</p>
-                      <p className="text-sm text-gray-600">
-                        Cadastrado em {new Date(voluntario.cadastro).toLocaleDateString('pt-BR')}
-                      </p>
-                    </div>
-                    <Badge variant={voluntario.status === 'ativo' ? 'default' : 'secondary'}>
-                      {voluntario.status}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Ações Rápidas */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Ações Rápidas</CardTitle>
-              <CardDescription>Acesso rápido às principais funcionalidades</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <Button className="h-auto p-4 flex-col space-y-2" onClick={handleNovoVoluntario}>
-                  <Users className="h-6 w-6" />
-                  <span>Novo Voluntário</span>
-                </Button>
-                
-                <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleNovaEscala}>
-                  <Calendar className="h-6 w-6" />
-                  <span>Nova Escala</span>
-                </Button>
-                
-                <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleVerVoluntarios}>
-                  <Eye className="h-6 w-6" />
-                  <span>Ver Voluntários</span>
-                </Button>
-                
-                <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleVerSubstituicoes}>
-                  <Clock className="h-6 w-6" />
-                  <span>Substituições</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Ações Rápidas */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Ações Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Button className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarVoluntarios}>
+                <Users className="h-6 w-6" />
+                <span>Gerenciar Voluntários</span>
+              </Button>
+              
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarEscalas}>
+                <Calendar className="h-6 w-6" />
+                <span>Gerenciar Escalas</span>
+              </Button>
+              
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleGerenciarSubstituicoes}>
+                <Clock className="h-6 w-6" />
+                <span>Ver Substituições</span>
+              </Button>
+              
+              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={handleConfiguracoes}>
+                <Settings className="h-6 w-6" />
+                <span>Configurações</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

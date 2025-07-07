@@ -71,10 +71,7 @@ const LiderDashboard = () => {
   };
 
   const handleConfiguracoes = () => {
-    toast({
-      title: "Funcionalidade em desenvolvimento",
-      description: "Configurações do perfil em breve."
-    });
+    navigate('/lider/perfil');
   };
 
   // Mock data para o líder
