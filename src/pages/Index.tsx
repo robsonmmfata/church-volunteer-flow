@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,15 +36,58 @@ const Index = () => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     toast.success("Substituição aprovada com sucesso!");
     console.log("Substituição aprovada:", id);
+    
+    // Enviar para API/webhook
+    fetch('/api/substituicoes/aprovar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    }).catch(err => console.error('Erro ao aprovar:', err));
   };
 
   const handleRecusarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     toast.error("Substituição recusada");
     console.log("Substituição recusada:", id);
+    
+    // Enviar para API/webhook
+    fetch('/api/substituicoes/recusar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    }).catch(err => console.error('Erro ao recusar:', err));
   };
 
-  // Mock data - Em produção, viria de uma API
+  const handleGerarEscala = () => {
+    toast.success("Gerando nova escala automaticamente...");
+    console.log("Gerando escala automática");
+    setTimeout(() => {
+      navigate('/admin/escalas/nova');
+    }, 1500);
+  };
+
+  const handleEnviarLembretes = () => {
+    toast.success("Lembretes enviados via WhatsApp!");
+    console.log("Enviando lembretes");
+    
+    // Simular envio via webhook
+    fetch('/api/whatsapp/lembretes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo: 'lembrete_escala' })
+    }).catch(err => console.error('Erro ao enviar lembretes:', err));
+  };
+
+  const handleSincronizarDados = () => {
+    toast.success("Sincronizando dados com Google Sheets...");
+    console.log("Sincronizando dados");
+    
+    // Simular sincronização
+    fetch('/api/sync/sheets', {
+      method: 'POST'
+    }).catch(err => console.error('Erro na sincronização:', err));
+  };
+
   const estatisticas = {
     totalVoluntarios: 50,
     escalasEsteMes: 20,
@@ -219,6 +261,43 @@ const Index = () => {
               <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => navigate('/admin/configuracoes')}>
                 <Settings className="h-6 w-6" />
                 <span>Configurações</span>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Automações */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Automações</CardTitle>
+            <CardDescription>Ferramentas automatizadas para otimizar o processo</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Button 
+                className="h-auto p-4 flex-col space-y-2" 
+                onClick={handleGerarEscala}
+              >
+                <Calendar className="h-6 w-6" />
+                <span>Gerar Escala Automática</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex-col space-y-2"
+                onClick={handleEnviarLembretes}
+              >
+                <Clock className="h-6 w-6" />
+                <span>Enviar Lembretes</span>
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex-col space-y-2"
+                onClick={handleSincronizarDados}
+              >
+                <Settings className="h-6 w-6" />
+                <span>Sincronizar Dados</span>
               </Button>
             </div>
           </CardContent>

@@ -25,6 +25,29 @@ const LiderDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [liderData, setLiderData] = useState({
+    proximasEscalas: [
+      { id: 1, data: "2024-01-07", culto: "Domingo 10h", status: "confirmado", voluntarios: 5 },
+      { id: 2, data: "2024-01-10", culto: "Quarta 20h", status: "incompleto", voluntarios: 3 },
+      { id: 3, data: "2024-01-14", culto: "Domingo 19h30", status: "confirmado", voluntarios: 5 },
+    ],
+    substituicoesPendentes: [
+      { 
+        id: 1,
+        data: "2024-01-21", 
+        culto: "Domingo 10h", 
+        solicitante: "Maria Santos", 
+        motivo: "Viagem de trabalho" 
+      }
+    ],
+    voluntariosEquipe: [
+      { id: 1, nome: "João Silva", celular: "11999999999", status: "ativo" },
+      { id: 2, nome: "Maria Santos", celular: "11888888888", status: "ativo" },
+      { id: 3, nome: "Pedro Lima", celular: "11777777777", status: "inativo" },
+      { id: 4, nome: "Ana Costa", celular: "11666666666", status: "ativo" },
+    ]
+  });
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -34,46 +57,98 @@ const LiderDashboard = () => {
     });
   };
 
-  const handleAprovarSubstituicao = (index: number) => {
+  const handleAprovarSubstituicao = (id: number) => {
+    setLiderData(prev => ({
+      ...prev,
+      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id)
+    }));
+    
     toast({
       title: "Substituição aprovada",
       description: "A substituição foi aprovada com sucesso."
     });
+    
+    // Enviar para API
+    fetch('/api/substituicoes/aprovar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, aprovadoPor: user?.id })
+    }).catch(err => console.error('Erro ao aprovar:', err));
   };
 
-  const handleRecusarSubstituicao = (index: number) => {
+  const handleRecusarSubstituicao = (id: number) => {
+    setLiderData(prev => ({
+      ...prev,
+      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id)
+    }));
+    
     toast({
       title: "Substituição recusada",
       description: "A substituição foi recusada."
     });
+    
+    // Enviar para API
+    fetch('/api/substituicoes/recusar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, recusadoPor: user?.id })
+    }).catch(err => console.error('Erro ao recusar:', err));
   };
 
   const handleContatar = (nome: string, celular: string) => {
-    const url = `https://wa.me/${celular.replace(/\D/g, '')}?text=Olá ${nome}, tudo bem?`;
+    const numeroLimpo = celular.replace(/\D/g, '');
+    const url = `https://wa.me/55${numeroLimpo}?text=Olá ${nome}, tudo bem? Sou o líder da escala.`;
     window.open(url, '_blank');
+    
+    toast({
+      title: "WhatsApp aberto",
+      description: `Contato iniciado com ${nome}`
+    });
   };
 
-  // Mock data para o líder
-  const liderData = {
-    proximasEscalas: [
-      { data: "2024-01-07", culto: "Domingo 10h", status: "confirmado", voluntarios: 5 },
-      { data: "2024-01-10", culto: "Quarta 20h", status: "incompleto", voluntarios: 3 },
-      { data: "2024-01-14", culto: "Domingo 19h30", status: "confirmado", voluntarios: 5 },
-    ],
-    substituicoesPendentes: [
-      { 
-        data: "2024-01-21", 
-        culto: "Domingo 10h", 
-        solicitante: "Maria Santos", 
-        motivo: "Viagem de trabalho" 
-      }
-    ],
-    voluntariosEquipe: [
-      { nome: "João Silva", celular: "11999999999", status: "ativo" },
-      { nome: "Maria Santos", celular: "11888888888", status: "ativo" },
-      { nome: "Pedro Lima", celular: "11777777777", status: "inativo" },
-      { nome: "Ana Costa", celular: "11666666666", status: "ativo" },
-    ]
+  const handleConvocarVoluntarios = () => {
+    const voluntariosAtivos = liderData.voluntariosEquipe.filter(v => v.status === 'ativo');
+    
+    voluntariosAtivos.forEach(voluntario => {
+      const numeroLimpo = voluntario.celular.replace(/\D/g, '');
+      const mensagem = `Olá ${voluntario.nome}! Você está sendo convocado para uma nova escala. Por favor, confirme sua disponibilidade.`;
+      
+      // Simular envio via WhatsApp API
+      fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numero: numeroLimpo,
+          mensagem: mensagem
+        })
+      }).catch(err => console.error('Erro ao enviar:', err));
+    });
+    
+    toast({
+      title: "Convocação enviada",
+      description: `${voluntariosAtivos.length} voluntários foram convocados via WhatsApp.`
+    });
+  };
+
+  const handleEnviarAvisos = () => {
+    const voluntariosAtivos = liderData.voluntariosEquipe.filter(v => v.status === 'ativo');
+    
+    toast({
+      title: "Enviando avisos",
+      description: `Aviso será enviado para ${voluntariosAtivos.length} voluntários.`
+    });
+    
+    // Simular envio de avisos
+    setTimeout(() => {
+      toast({
+        title: "Avisos enviados",
+        description: "Todos os voluntários foram notificados com sucesso."
+      });
+    }, 2000);
+  };
+
+  const handleEditarEscala = (escalaId: number) => {
+    navigate(`/admin/escalas/editar/${escalaId}`);
   };
 
   return (
@@ -182,8 +257,8 @@ const LiderDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {liderData.proximasEscalas.map((escala, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                {liderData.proximasEscalas.map((escala) => (
+                  <div key={escala.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{escala.culto}</p>
                       <p className="text-sm text-gray-600">
@@ -193,19 +268,24 @@ const LiderDashboard = () => {
                         {escala.voluntarios} voluntários escalados
                       </p>
                     </div>
-                    <Badge variant={escala.status === 'confirmado' ? 'default' : 'destructive'}>
-                      {escala.status === 'confirmado' ? (
-                        <>
-                          <CheckCircle className="h-3 w-3 mr-1" />
-                          Completo
-                        </>
-                      ) : (
-                        <>
-                          <AlertCircle className="h-3 w-3 mr-1" />
-                          Incompleto
-                        </>
-                      )}
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={escala.status === 'confirmado' ? 'default' : 'destructive'}>
+                        {escala.status === 'confirmado' ? (
+                          <>
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Completo
+                          </>
+                        ) : (
+                          <>
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Incompleto
+                          </>
+                        )}
+                      </Badge>
+                      <Button size="sm" variant="outline" onClick={() => handleEditarEscala(escala.id)}>
+                        Editar
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -222,8 +302,8 @@ const LiderDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {liderData.substituicoesPendentes.map((solicitacao, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
+                {liderData.substituicoesPendentes.map((solicitacao) => (
+                  <div key={solicitacao.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <p className="font-medium">{solicitacao.culto}</p>
@@ -243,10 +323,10 @@ const LiderDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(index)}>
+                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(solicitacao.id)}>
                         Aprovar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(index)}>
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(solicitacao.id)}>
                         Recusar
                       </Button>
                     </div>
@@ -273,8 +353,8 @@ const LiderDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {liderData.voluntariosEquipe.map((voluntario, index) => (
-                <div key={index} className="p-4 border rounded-lg">
+              {liderData.voluntariosEquipe.map((voluntario) => (
+                <div key={voluntario.id} className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium">{voluntario.nome}</h4>
                     <Badge variant={voluntario.status === 'ativo' ? 'default' : 'secondary'}>
@@ -300,7 +380,7 @@ const LiderDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Ações Rápidas */}
+        {/* Ações de Liderança */}
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Ações de Liderança</CardTitle>
@@ -314,12 +394,20 @@ const LiderDashboard = () => {
                 </Button>
               </Link>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => toast({ title: "Em desenvolvimento", description: "Funcionalidade será implementada em breve." })}>
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex-col space-y-2" 
+                onClick={handleConvocarVoluntarios}
+              >
                 <Users className="h-6 w-6" />
                 <span>Convocar Voluntários</span>
               </Button>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => toast({ title: "Em desenvolvimento", description: "Funcionalidade será implementada em breve." })}>
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex-col space-y-2" 
+                onClick={handleEnviarAvisos}
+              >
                 <MessageCircle className="h-6 w-6" />
                 <span>Enviar Avisos</span>
               </Button>

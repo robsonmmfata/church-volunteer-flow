@@ -22,6 +22,16 @@ const VoluntarioDashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const [voluntarioData, setVoluntarioData] = useState({
+    proximasEscalas: [
+      { id: 1, data: "2024-01-07", culto: "Domingo 10h", status: "confirmado" },
+      { id: 2, data: "2024-01-14", culto: "Domingo 19h30", status: "confirmado" },
+    ],
+    substituicoesPendentes: [
+      { id: 1, data: "2024-01-21", culto: "Quarta 20h", solicitante: "Maria Santos" }
+    ]
+  });
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -31,30 +41,90 @@ const VoluntarioDashboard = () => {
     });
   };
 
-  const handleAceitarSubstituicao = (index: number) => {
+  const handleAceitarSubstituicao = (id: number) => {
+    setVoluntarioData(prev => ({
+      ...prev,
+      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id),
+      proximasEscalas: [...prev.proximasEscalas, { 
+        id: Date.now(), 
+        data: "2024-01-21", 
+        culto: "Quarta 20h", 
+        status: "confirmado" 
+      }]
+    }));
+    
     toast({
       title: "Substituição aceita",
       description: "Você aceitou participar desta escala."
     });
+    
+    // Enviar para API
+    fetch('/api/substituicoes/aceitar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, voluntarioId: user?.id })
+    }).catch(err => console.error('Erro ao aceitar:', err));
   };
 
-  const handleRecusarSubstituicao = (index: number) => {
+  const handleRecusarSubstituicao = (id: number) => {
+    setVoluntarioData(prev => ({
+      ...prev,
+      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id)
+    }));
+    
     toast({
       title: "Substituição recusada",
       description: "Você recusou esta solicitação."
     });
+    
+    // Enviar para API
+    fetch('/api/substituicoes/recusar-voluntario', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, voluntarioId: user?.id })
+    }).catch(err => console.error('Erro ao recusar:', err));
   };
 
-  // Mock data - Em produção, viria de uma API
-  const voluntario = {
-    nome: user?.nome || "Voluntário",
-    proximasEscalas: [
-      { data: "2024-01-07", culto: "Domingo 10h", status: "confirmado" },
-      { data: "2024-01-14", culto: "Domingo 19h30", status: "confirmado" },
-    ],
-    substituicoesPendentes: [
-      { data: "2024-01-21", culto: "Quarta 20h", solicitante: "Maria Santos" }
-    ]
+  const handleVerEscalaDia = () => {
+    const hoje = new Date().toISOString().split('T')[0];
+    const escalaHoje = voluntarioData.proximasEscalas.find(escala => 
+      escala.data === hoje
+    );
+    
+    if (escalaHoje) {
+      toast({
+        title: "Escala de hoje",
+        description: `Você está escalado para: ${escalaHoje.culto}`
+      });
+    } else {
+      toast({
+        title: "Sem escala hoje",
+        description: "Você não está escalado para hoje."
+      });
+    }
+  };
+
+  const handleConfirmarPresenca = (escalaId: number) => {
+    setVoluntarioData(prev => ({
+      ...prev,
+      proximasEscalas: prev.proximasEscalas.map(escala => 
+        escala.id === escalaId 
+          ? { ...escala, status: "confirmado" }
+          : escala
+      )
+    }));
+    
+    toast({
+      title: "Presença confirmada",
+      description: "Sua presença foi confirmada com sucesso."
+    });
+    
+    // Enviar confirmação
+    fetch('/api/escalas/confirmar-presenca', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ escalaId, voluntarioId: user?.id })
+    }).catch(err => console.error('Erro ao confirmar:', err));
   };
 
   return (
@@ -68,7 +138,7 @@ const VoluntarioDashboard = () => {
             </div>
             <div>
               <span className="text-xl font-bold text-gray-900">
-                Olá, {voluntario.nome}
+                Olá, {user?.nome}
               </span>
               <p className="text-sm text-gray-600">Bem-vindo ao seu painel</p>
             </div>
@@ -103,7 +173,7 @@ const VoluntarioDashboard = () => {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{voluntario.proximasEscalas.length}</div>
+              <div className="text-2xl font-bold">{voluntarioData.proximasEscalas.length}</div>
               <p className="text-xs text-muted-foreground">
                 Cultos confirmados
               </p>
@@ -116,7 +186,7 @@ const VoluntarioDashboard = () => {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{voluntario.substituicoesPendentes.length}</div>
+              <div className="text-2xl font-bold">{voluntarioData.substituicoesPendentes.length}</div>
               <p className="text-xs text-muted-foreground">
                 Aguardando resposta
               </p>
@@ -148,22 +218,31 @@ const VoluntarioDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {voluntario.proximasEscalas.map((escala, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                {voluntarioData.proximasEscalas.map((escala) => (
+                  <div key={escala.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{escala.culto}</p>
                       <p className="text-sm text-gray-600">
                         {new Date(escala.data).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
-                    <Badge variant="default">
-                      <CheckCircle className="h-3 w-3 mr-1" />
-                      Confirmado
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="default">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        Confirmado
+                      </Badge>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => handleConfirmarPresenca(escala.id)}
+                      >
+                        Confirmar
+                      </Button>
+                    </div>
                   </div>
                 ))}
                 
-                {voluntario.proximasEscalas.length === 0 && (
+                {voluntarioData.proximasEscalas.length === 0 && (
                   <p className="text-gray-500 text-center py-4">
                     Nenhuma escala programada no momento
                   </p>
@@ -182,8 +261,8 @@ const VoluntarioDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {voluntario.substituicoesPendentes.map((solicitacao, index) => (
-                  <div key={index} className="p-4 border rounded-lg">
+                {voluntarioData.substituicoesPendentes.map((solicitacao) => (
+                  <div key={solicitacao.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between mb-3">
                       <div>
                         <p className="font-medium">{solicitacao.culto}</p>
@@ -200,17 +279,17 @@ const VoluntarioDashboard = () => {
                       </Badge>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="flex-1" onClick={() => handleAceitarSubstituicao(index)}>
+                      <Button size="sm" className="flex-1" onClick={() => handleAceitarSubstituicao(solicitacao.id)}>
                         Aceitar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(index)}>
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(solicitacao.id)}>
                         Recusar
                       </Button>
                     </div>
                   </div>
                 ))}
                 
-                {voluntario.substituicoesPendentes.length === 0 && (
+                {voluntarioData.substituicoesPendentes.length === 0 && (
                   <p className="text-gray-500 text-center py-4">
                     Nenhuma solicitação pendente
                   </p>
@@ -241,7 +320,11 @@ const VoluntarioDashboard = () => {
                 </Button>
               </Link>
               
-              <Button variant="outline" className="h-auto p-4 flex-col space-y-2" onClick={() => toast({ title: "Em desenvolvimento", description: "Funcionalidade será implementada em breve." })}>
+              <Button 
+                variant="outline" 
+                className="h-auto p-4 flex-col space-y-2" 
+                onClick={handleVerEscalaDia}
+              >
                 <Users className="h-6 w-6" />
                 <span>Ver Escala do Dia</span>
               </Button>
