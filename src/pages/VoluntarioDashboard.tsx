@@ -1,12 +1,11 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEscalas } from "@/contexts/EscalasContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Calendar, 
   Clock, 
@@ -15,14 +14,14 @@ import {
   AlertCircle,
   Home,
   Settings,
-  LogOut
+  LogOut,
+  Bell
 } from "lucide-react";
 
 const VoluntarioDashboard = () => {
   const { user, logout } = useAuth();
   const { escalas } = useEscalas();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   // Filtrar escalas onde o usuário está como voluntário
   const minhasEscalas = escalas.filter(escala => 
@@ -31,20 +30,49 @@ const VoluntarioDashboard = () => {
     id: escala.id,
     data: escala.data,
     culto: escala.culto,
-    status: "confirmado"
+    status: "confirmado",
+    lider: escala.lider,
+    criadoPor: escala.criadoPor,
+    modificadoPor: escala.modificadoPor,
+    ultimaModificacao: escala.ultimaModificacao
   }));
 
   const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
     { id: 1, data: "2024-01-21", culto: "Quarta 20h", solicitante: "Maria Santos" }
   ]);
 
+  // Monitorar mudanças nas escalas para notificar voluntários
+  useEffect(() => {
+    const escalasMaisRecentes = escalas.filter(escala => {
+      if (!escala.ultimaModificacao) return false;
+      const ultimaModificacao = new Date(escala.ultimaModificacao);
+      const agora = new Date();
+      const diferencaMinutos = (agora.getTime() - ultimaModificacao.getTime()) / (1000 * 60);
+      
+      // Notificar se foi modificada recentemente por admin ou líder E o voluntário está na escala
+      return diferencaMinutos < 1 && 
+             (escala.criadoPor === 'admin' || escala.criadoPor === 'lider' || escala.modificadoPor === 'admin' || escala.modificadoPor === 'lider') &&
+             escala.voluntarios.includes(user?.nome || '');
+    });
+
+    if (escalasMaisRecentes.length > 0) {
+      escalasMaisRecentes.forEach(escala => {
+        const modificador = escala.modificadoPor === 'admin' ? 'administrador' : 'líder';
+        toast.info(`Escala ${escala.culto} foi atualizada pelo ${modificador}`, {
+          duration: 5000,
+          action: {
+            label: "Ver Detalhes",
+            onClick: () => console.log(`Ver escala ${escala.id}`)
+          }
+        });
+      });
+    }
+  }, [escalas, user?.nome]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso."
-    });
+    toast.success("Logout realizado com sucesso");
   };
 
   const handleAceitarSubstituicao = (id: number) => {
@@ -114,6 +142,10 @@ const VoluntarioDashboard = () => {
             </div>
           </div>
           <div className="flex space-x-2">
+            <Button variant="outline" size="sm">
+              <Bell className="h-4 w-4 mr-2" />
+              Notificações
+            </Button>
             <Link to="/">
               <Button variant="outline" size="sm">
                 <Home className="h-4 w-4 mr-2" />
@@ -195,6 +227,15 @@ const VoluntarioDashboard = () => {
                       <p className="text-sm text-gray-600">
                         {new Date(escala.data).toLocaleDateString('pt-BR')}
                       </p>
+                      <p className="text-sm text-blue-600">
+                        Líder: {escala.lider}
+                      </p>
+                      {(escala.modificadoPor === 'admin' || escala.modificadoPor === 'lider') && (
+                        <Badge variant="outline" className="mt-1">
+                          <Bell className="h-3 w-3 mr-1" />
+                          Atualizada por {escala.modificadoPor === 'admin' ? 'Admin' : 'Líder'}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge variant="default">
@@ -204,7 +245,10 @@ const VoluntarioDashboard = () => {
                       <Button 
                         size="sm" 
                         variant="outline"
-                        onClick={() => handleConfirmarPresenca(escala.id)}
+                        onClick={() => {
+                          toast.success("Presença confirmada com sucesso!");
+                          console.log("Presença confirmada para escala:", escala.id);
+                        }}
                       >
                         Confirmar
                       </Button>

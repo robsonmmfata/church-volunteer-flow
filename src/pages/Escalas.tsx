@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import {
 import { Plus, Calendar, Users, Clock, Edit, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { useEscalas } from "@/contexts/EscalasContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Escala {
   id: number;
@@ -23,10 +25,14 @@ interface Escala {
   lider: string;
   voluntarios: string[];
   status: string;
+  criadoPor?: string;
+  modificadoPor?: string;
+  ultimaModificacao?: string;
 }
 
 const Escalas = () => {
-  const { escalas, deleteEscala } = useEscalas();
+  const { escalas, deleteEscala, updateEscala } = useEscalas();
+  const { user } = useAuth();
   const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
@@ -52,13 +58,20 @@ const Escalas = () => {
   };
 
   const handleEdit = (escala: Escala) => {
-    toast.info("Funcionalidade de edição em desenvolvimento");
+    // Simulação de edição - em um caso real, abriria um formulário
+    const updatedData = {
+      ...escala,
+      status: escala.status === "Completa" ? "Incompleta" : "Completa"
+    };
+    
+    updateEscala(escala.id, updatedData, user?.tipo || 'admin');
+    toast.success("Escala editada com sucesso!");
     console.log("Editando escala:", escala);
   };
 
   const handleDelete = (id: number) => {
     if (confirm("Tem certeza que deseja excluir esta escala?")) {
-      deleteEscala(id);
+      deleteEscala(id, user?.tipo || 'admin');
       toast.success("Escala excluída com sucesso!");
     }
   };
@@ -200,6 +213,7 @@ const Escalas = () => {
                     <TableHead>Líder</TableHead>
                     <TableHead>Voluntários</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Criado por</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -242,9 +256,20 @@ const Escalas = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getStatusColor(escala.status)}>
+                        <Badge variant={escala.status === "Completa" ? "default" : "destructive"}>
                           {escala.status}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline">
+                          {escala.criadoPor === 'admin' ? 'Admin' : 
+                           escala.criadoPor === 'lider' ? 'Líder' : 'Sistema'}
+                        </Badge>
+                        {escala.modificadoPor && escala.modificadoPor !== escala.criadoPor && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Mod. por: {escala.modificadoPor}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">

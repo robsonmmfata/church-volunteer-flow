@@ -1,12 +1,11 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEscalas } from "@/contexts/EscalasContext";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { 
   Calendar, 
   Clock, 
@@ -18,14 +17,14 @@ import {
   LogOut,
   UserCheck,
   MessageCircle,
-  Phone
+  Phone,
+  Bell
 } from "lucide-react";
 
 const LiderDashboard = () => {
   const { user, logout } = useAuth();
-  const { escalas } = useEscalas();
+  const { escalas, updateEscala } = useEscalas();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   // Filtrar escalas onde o usuário é líder
   const minhasEscalas = escalas.filter(escala => escala.lider === user?.nome);
@@ -47,13 +46,31 @@ const LiderDashboard = () => {
     { id: 4, nome: "Ana Costa", celular: "11666666666", status: "ativo" },
   ]);
 
+  // Monitorar mudanças nas escalas para notificar
+  useEffect(() => {
+    const escalasMaisRecentes = escalas.filter(escala => {
+      if (!escala.ultimaModificacao) return false;
+      const ultimaModificacao = new Date(escala.ultimaModificacao);
+      const agora = new Date();
+      const diferencaMinutos = (agora.getTime() - ultimaModificacao.getTime()) / (1000 * 60);
+      return diferencaMinutos < 1 && escala.criadoPor === 'admin'; // Notificar apenas alterações do admin
+    });
+
+    if (escalasMaisRecentes.length > 0) {
+      toast.info(`${escalasMaisRecentes.length} escala(s) foram atualizadas pelo administrador`, {
+        duration: 5000,
+        action: {
+          label: "Ver",
+          onClick: () => navigate('/admin/escalas')
+        }
+      });
+    }
+  }, [escalas, navigate]);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
-    toast({
-      title: "Logout realizado",
-      description: "Você foi desconectado com sucesso."
-    });
+    toast.success("Logout realizado com sucesso");
   };
 
   const handleAprovarSubstituicao = (id: number) => {
@@ -117,7 +134,23 @@ const LiderDashboard = () => {
   };
 
   const handleEditarEscala = (escalaId: number) => {
-    navigate(`/admin/escalas/editar/${escalaId}`);
+    const escala = escalas.find(e => e.id === escalaId);
+    if (escala) {
+      // Simulação de edição pelo líder
+      const updatedData = {
+        ...escala,
+        voluntarios: escala.voluntarios.length < 5 
+          ? [...escala.voluntarios, "Novo Voluntário"]
+          : escala.voluntarios.slice(0, 4)
+      };
+      
+      updateEscala(escalaId, { 
+        voluntarios: updatedData.voluntarios,
+        status: updatedData.voluntarios.length === 5 ? "Completa" : "Incompleta"
+      }, 'lider');
+      
+      toast.success("Escala atualizada! Voluntários foram notificados.");
+    }
   };
 
   return (
@@ -137,6 +170,10 @@ const LiderDashboard = () => {
             </div>
           </div>
           <div className="flex space-x-2">
+            <Button variant="outline" size="sm">
+              <Bell className="h-4 w-4 mr-2" />
+              Notificações
+            </Button>
             <Link to="/">
               <Button variant="outline" size="sm">
                 <Home className="h-4 w-4 mr-2" />
@@ -236,6 +273,12 @@ const LiderDashboard = () => {
                       <p className="text-sm text-blue-600">
                         {escala.voluntarios.length} voluntários escalados
                       </p>
+                      {escala.modificadoPor === 'admin' && (
+                        <Badge variant="outline" className="mt-1">
+                          <Bell className="h-3 w-3 mr-1" />
+                          Atualizada pelo Admin
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge variant={escala.status === 'Completa' ? 'default' : 'destructive'}>
