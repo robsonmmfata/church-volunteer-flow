@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -68,12 +67,7 @@ const LiderDashboard = () => {
       description: "A substituição foi aprovada com sucesso."
     });
     
-    // Enviar para API
-    fetch('/api/substituicoes/aprovar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, aprovadoPor: user?.id })
-    }).catch(err => console.error('Erro ao aprovar:', err));
+    console.log("Substituição aprovada pelo líder:", id);
   };
 
   const handleRecusarSubstituicao = (id: number) => {
@@ -87,12 +81,7 @@ const LiderDashboard = () => {
       description: "A substituição foi recusada."
     });
     
-    // Enviar para API
-    fetch('/api/substituicoes/recusar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, recusadoPor: user?.id })
-    }).catch(err => console.error('Erro ao recusar:', err));
+    console.log("Substituição recusada pelo líder:", id);
   };
 
   const handleContatar = (nome: string, celular: string) => {
@@ -109,25 +98,12 @@ const LiderDashboard = () => {
   const handleConvocarVoluntarios = () => {
     const voluntariosAtivos = liderData.voluntariosEquipe.filter(v => v.status === 'ativo');
     
-    voluntariosAtivos.forEach(voluntario => {
-      const numeroLimpo = voluntario.celular.replace(/\D/g, '');
-      const mensagem = `Olá ${voluntario.nome}! Você está sendo convocado para uma nova escala. Por favor, confirme sua disponibilidade.`;
-      
-      // Simular envio via WhatsApp API
-      fetch('/api/whatsapp/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          numero: numeroLimpo,
-          mensagem: mensagem
-        })
-      }).catch(err => console.error('Erro ao enviar:', err));
-    });
-    
     toast({
       title: "Convocação enviada",
       description: `${voluntariosAtivos.length} voluntários foram convocados via WhatsApp.`
     });
+    
+    console.log("Convocando voluntários:", voluntariosAtivos);
   };
 
   const handleEnviarAvisos = () => {
@@ -138,7 +114,6 @@ const LiderDashboard = () => {
       description: `Aviso será enviado para ${voluntariosAtivos.length} voluntários.`
     });
     
-    // Simular envio de avisos
     setTimeout(() => {
       toast({
         title: "Avisos enviados",
@@ -162,7 +137,7 @@ const LiderDashboard = () => {
             </div>
             <div>
               <span className="text-xl font-bold text-gray-900">
-                Olá, {user?.nome}
+                Olá, {user?.nome || 'Líder'}
               </span>
               <p className="text-sm text-gray-600">Painel do Líder</p>
             </div>

@@ -10,10 +10,11 @@ import {
   CheckCircle,
   Settings
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
     { 
@@ -34,32 +35,28 @@ const Index = () => {
   
   const handleAprovarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
-    toast.success("Substituição aprovada com sucesso!");
+    toast({
+      title: "Substituição aprovada",
+      description: "Substituição aprovada com sucesso!",
+    });
     console.log("Substituição aprovada:", id);
-    
-    // Enviar para API/webhook
-    fetch('/api/substituicoes/aprovar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id })
-    }).catch(err => console.error('Erro ao aprovar:', err));
   };
 
   const handleRecusarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
-    toast.error("Substituição recusada");
+    toast({
+      title: "Substituição recusada", 
+      description: "Substituição recusada",
+      variant: "destructive"
+    });
     console.log("Substituição recusada:", id);
-    
-    // Enviar para API/webhook
-    fetch('/api/substituicoes/recusar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id })
-    }).catch(err => console.error('Erro ao recusar:', err));
   };
 
   const handleGerarEscala = () => {
-    toast.success("Gerando nova escala automaticamente...");
+    toast({
+      title: "Gerando escala",
+      description: "Gerando nova escala automaticamente...",
+    });
     console.log("Gerando escala automática");
     setTimeout(() => {
       navigate('/admin/escalas/nova');
@@ -67,25 +64,19 @@ const Index = () => {
   };
 
   const handleEnviarLembretes = () => {
-    toast.success("Lembretes enviados via WhatsApp!");
+    toast({
+      title: "Lembretes enviados",
+      description: "Lembretes enviados via WhatsApp!",
+    });
     console.log("Enviando lembretes");
-    
-    // Simular envio via webhook
-    fetch('/api/whatsapp/lembretes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo: 'lembrete_escala' })
-    }).catch(err => console.error('Erro ao enviar lembretes:', err));
   };
 
   const handleSincronizarDados = () => {
-    toast.success("Sincronizando dados com Google Sheets...");
+    toast({
+      title: "Sincronizando dados",
+      description: "Sincronizando dados com Google Sheets...",
+    });
     console.log("Sincronizando dados");
-    
-    // Simular sincronização
-    fetch('/api/sync/sheets', {
-      method: 'POST'
-    }).catch(err => console.error('Erro na sincronização:', err));
   };
 
   const estatisticas = {

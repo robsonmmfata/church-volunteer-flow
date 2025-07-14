@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -58,12 +57,7 @@ const VoluntarioDashboard = () => {
       description: "Você aceitou participar desta escala."
     });
     
-    // Enviar para API
-    fetch('/api/substituicoes/aceitar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, voluntarioId: user?.id })
-    }).catch(err => console.error('Erro ao aceitar:', err));
+    console.log("Substituição aceita:", id);
   };
 
   const handleRecusarSubstituicao = (id: number) => {
@@ -77,12 +71,7 @@ const VoluntarioDashboard = () => {
       description: "Você recusou esta solicitação."
     });
     
-    // Enviar para API
-    fetch('/api/substituicoes/recusar-voluntario', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, voluntarioId: user?.id })
-    }).catch(err => console.error('Erro ao recusar:', err));
+    console.log("Substituição recusada:", id);
   };
 
   const handleVerEscalaDia = () => {
@@ -119,12 +108,7 @@ const VoluntarioDashboard = () => {
       description: "Sua presença foi confirmada com sucesso."
     });
     
-    // Enviar confirmação
-    fetch('/api/escalas/confirmar-presenca', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ escalaId, voluntarioId: user?.id })
-    }).catch(err => console.error('Erro ao confirmar:', err));
+    console.log("Presença confirmada para escala:", escalaId);
   };
 
   return (
@@ -138,7 +122,7 @@ const VoluntarioDashboard = () => {
             </div>
             <div>
               <span className="text-xl font-bold text-gray-900">
-                Olá, {user?.nome}
+                Olá, {user?.nome || 'Voluntário'}
               </span>
               <p className="text-sm text-gray-600">Bem-vindo ao seu painel</p>
             </div>

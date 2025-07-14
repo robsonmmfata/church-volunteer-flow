@@ -13,10 +13,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Search, Clock, CheckCircle, XCircle } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 
 const Substituicoes = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
   
   // Estado real para substituições
   const [substituicoes, setSubstituicoes] = useState([
@@ -66,7 +67,10 @@ const Substituicoes = () => {
           : sub
       )
     );
-    toast.success("Substituição aprovada com sucesso!");
+    toast({
+      title: "Substituição aprovada",
+      description: "Substituição aprovada com sucesso!",
+    });
   };
 
   const handleRejeitar = (id: number) => {
@@ -77,7 +81,11 @@ const Substituicoes = () => {
           : sub
       )
     );
-    toast.error("Substituição rejeitada");
+    toast({
+      title: "Substituição rejeitada",
+      description: "Substituição rejeitada",
+      variant: "destructive"
+    });
   };
 
   const getStatusBadge = (status: string) => {
