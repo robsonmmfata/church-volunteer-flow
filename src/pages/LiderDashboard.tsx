@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEscalas } from "@/contexts/EscalasContext";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
@@ -21,31 +23,29 @@ import {
 
 const LiderDashboard = () => {
   const { user, logout } = useAuth();
+  const { escalas } = useEscalas();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [liderData, setLiderData] = useState({
-    proximasEscalas: [
-      { id: 1, data: "2024-01-07", culto: "Domingo 10h", status: "confirmado", voluntarios: 5 },
-      { id: 2, data: "2024-01-10", culto: "Quarta 20h", status: "incompleto", voluntarios: 3 },
-      { id: 3, data: "2024-01-14", culto: "Domingo 19h30", status: "confirmado", voluntarios: 5 },
-    ],
-    substituicoesPendentes: [
-      { 
-        id: 1,
-        data: "2024-01-21", 
-        culto: "Domingo 10h", 
-        solicitante: "Maria Santos", 
-        motivo: "Viagem de trabalho" 
-      }
-    ],
-    voluntariosEquipe: [
-      { id: 1, nome: "João Silva", celular: "11999999999", status: "ativo" },
-      { id: 2, nome: "Maria Santos", celular: "11888888888", status: "ativo" },
-      { id: 3, nome: "Pedro Lima", celular: "11777777777", status: "inativo" },
-      { id: 4, nome: "Ana Costa", celular: "11666666666", status: "ativo" },
-    ]
-  });
+  // Filtrar escalas onde o usuário é líder
+  const minhasEscalas = escalas.filter(escala => escala.lider === user?.nome);
+
+  const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
+    { 
+      id: 1,
+      data: "2024-01-21", 
+      culto: "Domingo 10h", 
+      solicitante: "Maria Santos", 
+      motivo: "Viagem de trabalho" 
+    }
+  ]);
+
+  const [voluntariosEquipe] = useState([
+    { id: 1, nome: "João Silva", celular: "11999999999", status: "ativo" },
+    { id: 2, nome: "Maria Santos", celular: "11888888888", status: "ativo" },
+    { id: 3, nome: "Pedro Lima", celular: "11777777777", status: "inativo" },
+    { id: 4, nome: "Ana Costa", celular: "11666666666", status: "ativo" },
+  ]);
 
   const handleLogout = () => {
     logout();
@@ -57,10 +57,7 @@ const LiderDashboard = () => {
   };
 
   const handleAprovarSubstituicao = (id: number) => {
-    setLiderData(prev => ({
-      ...prev,
-      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id)
-    }));
+    setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
     toast({
       title: "Substituição aprovada",
@@ -71,10 +68,7 @@ const LiderDashboard = () => {
   };
 
   const handleRecusarSubstituicao = (id: number) => {
-    setLiderData(prev => ({
-      ...prev,
-      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id)
-    }));
+    setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
     toast({
       title: "Substituição recusada",
@@ -96,7 +90,7 @@ const LiderDashboard = () => {
   };
 
   const handleConvocarVoluntarios = () => {
-    const voluntariosAtivos = liderData.voluntariosEquipe.filter(v => v.status === 'ativo');
+    const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
     
     toast({
       title: "Convocação enviada",
@@ -107,7 +101,7 @@ const LiderDashboard = () => {
   };
 
   const handleEnviarAvisos = () => {
-    const voluntariosAtivos = liderData.voluntariosEquipe.filter(v => v.status === 'ativo');
+    const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
     
     toast({
       title: "Enviando avisos",
@@ -172,7 +166,7 @@ const LiderDashboard = () => {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{liderData.proximasEscalas.length}</div>
+              <div className="text-2xl font-bold">{minhasEscalas.length}</div>
               <p className="text-xs text-muted-foreground">
                 Como líder responsável
               </p>
@@ -185,7 +179,7 @@ const LiderDashboard = () => {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{liderData.substituicoesPendentes.length}</div>
+              <div className="text-2xl font-bold">{substituicoesPendentes.length}</div>
               <p className="text-xs text-muted-foreground">
                 Aguardando aprovação
               </p>
@@ -199,7 +193,7 @@ const LiderDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {liderData.voluntariosEquipe.filter(v => v.status === 'ativo').length}
+                {voluntariosEquipe.filter(v => v.status === 'ativo').length}
               </div>
               <p className="text-xs text-muted-foreground">
                 Voluntários ativos
@@ -232,7 +226,7 @@ const LiderDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {liderData.proximasEscalas.map((escala) => (
+                {minhasEscalas.map((escala) => (
                   <div key={escala.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{escala.culto}</p>
@@ -240,12 +234,12 @@ const LiderDashboard = () => {
                         {new Date(escala.data).toLocaleDateString('pt-BR')}
                       </p>
                       <p className="text-sm text-blue-600">
-                        {escala.voluntarios} voluntários escalados
+                        {escala.voluntarios.length} voluntários escalados
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant={escala.status === 'confirmado' ? 'default' : 'destructive'}>
-                        {escala.status === 'confirmado' ? (
+                      <Badge variant={escala.status === 'Completa' ? 'default' : 'destructive'}>
+                        {escala.status === 'Completa' ? (
                           <>
                             <CheckCircle className="h-3 w-3 mr-1" />
                             Completo
@@ -263,6 +257,12 @@ const LiderDashboard = () => {
                     </div>
                   </div>
                 ))}
+                
+                {minhasEscalas.length === 0 && (
+                  <p className="text-gray-500 text-center py-4">
+                    Nenhuma escala onde você é líder no momento
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -277,7 +277,7 @@ const LiderDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {liderData.substituicoesPendentes.map((solicitacao) => (
+                {substituicoesPendentes.map((solicitacao) => (
                   <div key={solicitacao.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -308,7 +308,7 @@ const LiderDashboard = () => {
                   </div>
                 ))}
                 
-                {liderData.substituicoesPendentes.length === 0 && (
+                {substituicoesPendentes.length === 0 && (
                   <p className="text-gray-500 text-center py-4">
                     Nenhuma solicitação pendente
                   </p>
@@ -328,7 +328,7 @@ const LiderDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {liderData.voluntariosEquipe.map((voluntario) => (
+              {voluntariosEquipe.map((voluntario) => (
                 <div key={voluntario.id} className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium">{voluntario.nome}</h4>

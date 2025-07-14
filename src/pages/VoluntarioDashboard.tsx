@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEscalas } from "@/contexts/EscalasContext";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Calendar, 
@@ -18,18 +20,23 @@ import {
 
 const VoluntarioDashboard = () => {
   const { user, logout } = useAuth();
+  const { escalas } = useEscalas();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [voluntarioData, setVoluntarioData] = useState({
-    proximasEscalas: [
-      { id: 1, data: "2024-01-07", culto: "Domingo 10h", status: "confirmado" },
-      { id: 2, data: "2024-01-14", culto: "Domingo 19h30", status: "confirmado" },
-    ],
-    substituicoesPendentes: [
-      { id: 1, data: "2024-01-21", culto: "Quarta 20h", solicitante: "Maria Santos" }
-    ]
-  });
+  // Filtrar escalas onde o usuário está como voluntário
+  const minhasEscalas = escalas.filter(escala => 
+    escala.voluntarios.includes(user?.nome || '')
+  ).map(escala => ({
+    id: escala.id,
+    data: escala.data,
+    culto: escala.culto,
+    status: "confirmado"
+  }));
+
+  const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
+    { id: 1, data: "2024-01-21", culto: "Quarta 20h", solicitante: "Maria Santos" }
+  ]);
 
   const handleLogout = () => {
     logout();
@@ -41,16 +48,7 @@ const VoluntarioDashboard = () => {
   };
 
   const handleAceitarSubstituicao = (id: number) => {
-    setVoluntarioData(prev => ({
-      ...prev,
-      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id),
-      proximasEscalas: [...prev.proximasEscalas, { 
-        id: Date.now(), 
-        data: "2024-01-21", 
-        culto: "Quarta 20h", 
-        status: "confirmado" 
-      }]
-    }));
+    setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
     toast({
       title: "Substituição aceita",
@@ -61,10 +59,7 @@ const VoluntarioDashboard = () => {
   };
 
   const handleRecusarSubstituicao = (id: number) => {
-    setVoluntarioData(prev => ({
-      ...prev,
-      substituicoesPendentes: prev.substituicoesPendentes.filter(sub => sub.id !== id)
-    }));
+    setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
     toast({
       title: "Substituição recusada",
@@ -76,7 +71,7 @@ const VoluntarioDashboard = () => {
 
   const handleVerEscalaDia = () => {
     const hoje = new Date().toISOString().split('T')[0];
-    const escalaHoje = voluntarioData.proximasEscalas.find(escala => 
+    const escalaHoje = minhasEscalas.find(escala => 
       escala.data === hoje
     );
     
@@ -94,15 +89,6 @@ const VoluntarioDashboard = () => {
   };
 
   const handleConfirmarPresenca = (escalaId: number) => {
-    setVoluntarioData(prev => ({
-      ...prev,
-      proximasEscalas: prev.proximasEscalas.map(escala => 
-        escala.id === escalaId 
-          ? { ...escala, status: "confirmado" }
-          : escala
-      )
-    }));
-    
     toast({
       title: "Presença confirmada",
       description: "Sua presença foi confirmada com sucesso."
@@ -157,7 +143,7 @@ const VoluntarioDashboard = () => {
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{voluntarioData.proximasEscalas.length}</div>
+              <div className="text-2xl font-bold">{minhasEscalas.length}</div>
               <p className="text-xs text-muted-foreground">
                 Cultos confirmados
               </p>
@@ -170,7 +156,7 @@ const VoluntarioDashboard = () => {
               <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{voluntarioData.substituicoesPendentes.length}</div>
+              <div className="text-2xl font-bold">{substituicoesPendentes.length}</div>
               <p className="text-xs text-muted-foreground">
                 Aguardando resposta
               </p>
@@ -202,7 +188,7 @@ const VoluntarioDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {voluntarioData.proximasEscalas.map((escala) => (
+                {minhasEscalas.map((escala) => (
                   <div key={escala.id} className="flex items-center justify-between p-3 border rounded-lg">
                     <div>
                       <p className="font-medium">{escala.culto}</p>
@@ -226,7 +212,7 @@ const VoluntarioDashboard = () => {
                   </div>
                 ))}
                 
-                {voluntarioData.proximasEscalas.length === 0 && (
+                {minhasEscalas.length === 0 && (
                   <p className="text-gray-500 text-center py-4">
                     Nenhuma escala programada no momento
                   </p>
@@ -245,7 +231,7 @@ const VoluntarioDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {voluntarioData.substituicoesPendentes.map((solicitacao) => (
+                {substituicoesPendentes.map((solicitacao) => (
                   <div key={solicitacao.id} className="p-4 border rounded-lg">
                     <div className="flex items-start justify-between mb-3">
                       <div>
@@ -273,7 +259,7 @@ const VoluntarioDashboard = () => {
                   </div>
                 ))}
                 
-                {voluntarioData.substituicoesPendentes.length === 0 && (
+                {substituicoesPendentes.length === 0 && (
                   <p className="text-gray-500 text-center py-4">
                     Nenhuma solicitação pendente
                   </p>

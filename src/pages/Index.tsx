@@ -1,3 +1,4 @@
+
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,10 +12,12 @@ import {
   Settings
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useEscalas } from "@/contexts/EscalasContext";
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { escalas } = useEscalas();
   
   const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
     { 
@@ -81,16 +84,18 @@ const Index = () => {
 
   const estatisticas = {
     totalVoluntarios: 50,
-    escalasEsteMes: 20,
+    escalasEsteMes: escalas.length,
     substituicoesPendentes: substituicoesPendentes.length,
     taxaPresenca: 95
   };
 
-  const proximasEscalas = [
-    { data: "2024-01-07", culto: "Domingo 10h", voluntarios: 5, status: "completa" },
-    { data: "2024-01-10", culto: "Quarta 20h", voluntarios: 3, status: "incompleta" },
-    { data: "2024-01-14", culto: "Domingo 19h30", voluntarios: 5, status: "completa" },
-  ];
+  // Mapear escalas do contexto para o formato do dashboard
+  const proximasEscalas = escalas.map(escala => ({
+    data: escala.data,
+    culto: escala.culto,
+    voluntarios: escala.voluntarios.length,
+    status: escala.status.toLowerCase() === 'completa' ? 'completa' : 'incompleta'
+  }));
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -178,6 +183,12 @@ const Index = () => {
                     </Badge>
                   </div>
                 ))}
+                
+                {proximasEscalas.length === 0 && (
+                  <p className="text-gray-500 text-center py-4">
+                    Nenhuma escala programada
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
