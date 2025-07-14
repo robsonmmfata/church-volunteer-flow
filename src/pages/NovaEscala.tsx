@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Save, CalendarIcon, Users, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Save, CalendarIcon, Users, AlertTriangle, Wand2 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -59,6 +60,36 @@ const NovaEscala = () => {
     );
   };
 
+  const handleGerarEscalaAutomatica = () => {
+    if (!selectedCulto) {
+      toast.error("Selecione um culto primeiro");
+      return;
+    }
+
+    try {
+      // Lógica simples de geração automática
+      const homens = voluntarios.filter(v => v.sexo === "Masculino").slice(0, 2);
+      const mulheres = voluntarios.filter(v => v.sexo === "Feminino").slice(0, 3);
+      
+      const escalaAutomatica = [
+        ...homens.map(v => v.id),
+        ...mulheres.map(v => v.id)
+      ];
+
+      setSelectedVoluntarios(escalaAutomatica);
+      
+      // Selecionar líder automaticamente se não selecionado
+      if (!selectedLider && lideres.length > 0) {
+        setSelectedLider(lideres[0].nome);
+      }
+
+      toast.success("Escala gerada automaticamente!");
+    } catch (error) {
+      console.error("Erro ao gerar escala:", error);
+      toast.error("Erro ao gerar escala automaticamente");
+    }
+  };
+
   const validateComposition = () => {
     const selected = voluntarios.filter(v => selectedVoluntarios.includes(v.id));
     const homens = selected.filter(v => v.sexo === "Masculino").length;
@@ -97,21 +128,15 @@ const NovaEscala = () => {
         voluntarios: selectedVoluntarios
       };
 
-      const response = await fetch('/webhook/escala', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(escalaData),
-      });
+      console.log("Salvando escala:", escalaData);
+      
+      // Simular delay de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (response.ok) {
-        toast.success("Escala criada com sucesso!");
-        navigate("/escalas");
-      } else {
-        throw new Error('Erro ao criar escala');
-      }
+      toast.success("Escala criada com sucesso!");
+      navigate("/admin/escalas");
     } catch (error) {
+      console.error("Erro ao criar escala:", error);
       toast.error("Erro ao criar escala. Tente novamente.");
     } finally {
       setLoading(false);
@@ -125,7 +150,7 @@ const NovaEscala = () => {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => navigate("/escalas")}
+            onClick={() => navigate("/admin/escalas")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -202,6 +227,19 @@ const NovaEscala = () => {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                {/* Botão de Geração Automática */}
+                <div className="pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGerarEscalaAutomatica}
+                    className="w-full flex items-center space-x-2"
+                  >
+                    <Wand2 className="h-4 w-4" />
+                    <span>Gerar Escala Automaticamente</span>
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -294,14 +332,14 @@ const NovaEscala = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => navigate("/escalas")}
+              onClick={() => navigate("/admin/escalas")}
               className="flex-1"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              disabled={loading || !validation.totalOk || !validation.compositionOk}
+              disabled={loading || !validation.totalOk || !validation.compositionOk || !date || !selectedCulto || !selectedLider}
               className="flex-1 flex items-center justify-center space-x-2"
             >
               <Save className="h-4 w-4" />

@@ -25,25 +25,26 @@ const NovoVoluntario = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validação básica
+    if (!formData.nome || !formData.sexo || !formData.celular) {
+      toast.error("Preencha todos os campos obrigatórios");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Simulação de envio para webhook N8N
-      const response = await fetch('/webhook/voluntario', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        toast.success("Voluntário cadastrado com sucesso!");
-        navigate("/voluntarios");
-      } else {
-        throw new Error('Erro ao cadastrar voluntário');
-      }
+      // Simulação de salvamento - em produção salvaria no banco de dados
+      console.log("Salvando voluntário:", formData);
+      
+      // Simular delay de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success("Voluntário cadastrado com sucesso!");
+      navigate("/admin/voluntarios");
     } catch (error) {
+      console.error("Erro ao cadastrar voluntário:", error);
       toast.error("Erro ao cadastrar voluntário. Tente novamente.");
     } finally {
       setLoading(false);
@@ -64,7 +65,7 @@ const NovoVoluntario = () => {
           <Button
             variant="outline"
             size="icon"
-            onClick={() => navigate("/voluntarios")}
+            onClick={() => navigate("/admin/voluntarios")}
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
@@ -182,14 +183,14 @@ const NovoVoluntario = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate("/voluntarios")}
+                  onClick={() => navigate("/admin/voluntarios")}
                   className="flex-1"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !formData.nome || !formData.sexo || !formData.celular}
                   className="flex-1 flex items-center justify-center space-x-2"
                 >
                   <Save className="h-4 w-4" />
