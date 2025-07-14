@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Plus, Calendar, Users, Clock, Edit, Trash2, Eye } from "lucide-react";
 import { toast } from "sonner";
+import { useEscalas } from "@/contexts/EscalasContext";
 
 interface Escala {
   id: number;
@@ -26,33 +26,7 @@ interface Escala {
 }
 
 const Escalas = () => {
-  const [escalas, setEscalas] = useState<Escala[]>([
-    {
-      id: 1,
-      data: "2024-01-07",
-      culto: "Domingo 10h",
-      lider: "João Silva",
-      voluntarios: ["Ana Santos", "Carlos Oliveira", "Maria Silva", "Pedro Costa", "Lucia Oliveira"],
-      status: "Completa"
-    },
-    {
-      id: 2,
-      data: "2024-01-07",
-      culto: "Domingo 19h30",
-      lider: "Ana Santos",
-      voluntarios: ["João Silva", "Carlos Oliveira", "Maria Silva", "Pedro Costa"],
-      status: "Incompleta"
-    },
-    {
-      id: 3,
-      data: "2024-01-10",
-      culto: "Quarta 20h (Culto da Fé)",
-      lider: "Carlos Oliveira",
-      voluntarios: ["Ana Santos", "Maria Silva", "Pedro Costa", "Lucia Oliveira", "João Silva"],
-      status: "Completa"
-    }
-  ]);
-
+  const { escalas, deleteEscala } = useEscalas();
   const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
 
@@ -84,7 +58,7 @@ const Escalas = () => {
 
   const handleDelete = (id: number) => {
     if (confirm("Tem certeza que deseja excluir esta escala?")) {
-      setEscalas(prev => prev.filter(escala => escala.id !== id));
+      deleteEscala(id);
       toast.success("Escala excluída com sucesso!");
     }
   };

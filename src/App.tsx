@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { EscalasProvider } from "@/contexts/EscalasContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
@@ -38,136 +39,138 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Páginas públicas */}
-            <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/voluntario/cadastro" element={<VoluntarioCadastro />} />
-            
-            {/* Área do voluntário - protegida */}
-            <Route 
-              path="/voluntario/dashboard" 
-              element={
-                <ProtectedRoute allowedUserTypes={['voluntario']}>
-                  <VoluntarioDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/voluntario/perfil" 
-              element={
-                <ProtectedRoute allowedUserTypes={['voluntario']}>
-                  <PerfilUsuario />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/voluntario/disponibilidade" 
-              element={
-                <ProtectedRoute allowedUserTypes={['voluntario']}>
-                  <DisponibilidadeVoluntario />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/voluntario/solicitar-substituicao" 
-              element={
-                <ProtectedRoute allowedUserTypes={['voluntario']}>
-                  <SolicitarSubstituicao />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Área do líder - protegida */}
-            <Route 
-              path="/lider/dashboard" 
-              element={
-                <ProtectedRoute allowedUserTypes={['lider']}>
-                  <LiderDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/lider/perfil" 
-              element={
-                <ProtectedRoute allowedUserTypes={['lider']}>
-                  <PerfilUsuario />
-                </ProtectedRoute>
-              } 
-            />
-            
-            {/* Área administrativa - protegida */}
-            <Route 
-              path="/admin" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
-                  <AdminLayout><Index /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/perfil" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
-                  <PerfilUsuario />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/voluntarios" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
-                  <AdminLayout><Voluntarios /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/voluntarios/novo" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
-                  <AdminLayout><NovoVoluntario /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/escalas" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
-                  <AdminLayout><Escalas /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/escalas/nova" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
-                  <AdminLayout><NovaEscala /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/substituicoes" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
-                  <AdminLayout><Substituicoes /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/admin/configuracoes" 
-              element={
-                <ProtectedRoute allowedUserTypes={['administrador']}>
-                  <AdminLayout><Configuracoes /></AdminLayout>
-                </ProtectedRoute>
-              } 
-            />
-            
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <EscalasProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              {/* Páginas públicas */}
+              <Route path="/" element={<Landing />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/voluntario/cadastro" element={<VoluntarioCadastro />} />
+              
+              {/* Área do voluntário - protegida */}
+              <Route 
+                path="/voluntario/dashboard" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['voluntario']}>
+                    <VoluntarioDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/voluntario/perfil" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['voluntario']}>
+                    <PerfilUsuario />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/voluntario/disponibilidade" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['voluntario']}>
+                    <DisponibilidadeVoluntario />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/voluntario/solicitar-substituicao" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['voluntario']}>
+                    <SolicitarSubstituicao />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Área do líder - protegida */}
+              <Route 
+                path="/lider/dashboard" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['lider']}>
+                    <LiderDashboard />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/lider/perfil" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['lider']}>
+                    <PerfilUsuario />
+                  </ProtectedRoute>
+                } 
+              />
+              
+              {/* Área administrativa - protegida */}
+              <Route 
+                path="/admin" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador']}>
+                    <AdminLayout><Index /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/perfil" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador']}>
+                    <PerfilUsuario />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/voluntarios" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador']}>
+                    <AdminLayout><Voluntarios /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/voluntarios/novo" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador']}>
+                    <AdminLayout><NovoVoluntario /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/escalas" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
+                    <AdminLayout><Escalas /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/escalas/nova" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
+                    <AdminLayout><NovaEscala /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/substituicoes" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador', 'lider']}>
+                    <AdminLayout><Substituicoes /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/configuracoes" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador']}>
+                    <AdminLayout><Configuracoes /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </EscalasProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

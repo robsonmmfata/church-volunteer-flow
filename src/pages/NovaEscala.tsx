@@ -12,9 +12,11 @@ import { ArrowLeft, Save, CalendarIcon, Users, AlertTriangle, Wand2 } from "luci
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useEscalas } from "@/contexts/EscalasContext";
 
 const NovaEscala = () => {
   const navigate = useNavigate();
+  const { addEscala } = useEscalas();
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState<Date>();
   const [selectedCulto, setSelectedCulto] = useState("");
@@ -67,6 +69,8 @@ const NovaEscala = () => {
     }
 
     try {
+      console.log("Gerando escala automática");
+      
       // Lógica simples de geração automática
       const homens = voluntarios.filter(v => v.sexo === "Masculino").slice(0, 2);
       const mulheres = voluntarios.filter(v => v.sexo === "Feminino").slice(0, 3);
@@ -113,6 +117,7 @@ const NovaEscala = () => {
       return;
     }
 
+    const validation = validateComposition();
     if (!validation.compositionOk) {
       toast.error("A composição deve ter exatamente 2 homens e 3 mulheres");
       return;
@@ -121,17 +126,26 @@ const NovaEscala = () => {
     setLoading(true);
 
     try {
+      // Converter IDs dos voluntários para nomes
+      const voluntariosNomes = selectedVoluntarios.map(id => {
+        const voluntario = voluntarios.find(v => v.id === id);
+        return voluntario ? voluntario.nome : '';
+      }).filter(nome => nome !== '');
+
       const escalaData = {
         data: format(date, 'yyyy-MM-dd'),
         culto: selectedCulto,
         lider: selectedLider,
-        voluntarios: selectedVoluntarios
+        voluntarios: voluntariosNomes
       };
 
       console.log("Salvando escala:", escalaData);
       
       // Simular delay de API
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Adicionar escala ao contexto
+      addEscala(escalaData);
 
       toast.success("Escala criada com sucesso!");
       navigate("/admin/escalas");
