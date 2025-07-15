@@ -1,13 +1,12 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Table,
@@ -17,31 +16,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Calendar, Users, Clock, Edit, Trash2, Eye, LogOut } from "lucide-react";
+import { ArrowLeft, Edit, Eye, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useEscalas } from "@/contexts/EscalasContext";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface Escala {
-  id: number;
-  data: string;
-  culto: string;
-  lider: string;
-  voluntarios: string[];
-  status: string;
-  criadoPor?: string;
-  modificadoPor?: string;
-  ultimaModificacao?: string;
-}
-
-const Escalas = () => {
-  const { escalas, deleteEscala, updateEscala } = useEscalas();
-  const { user, logout } = useAuth();
+const LiderEscalas = () => {
+  const { escalas, updateEscala } = useEscalas();
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
+  const [selectedEscala, setSelectedEscala] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingEscala, setEditingEscala] = useState<Escala | null>(null);
+  const [editingEscala, setEditingEscala] = useState<any>(null);
+
+  // Filtrar apenas escalas onde o usuário é líder
+  const minhasEscalas = escalas.filter(escala => escala.lider === user?.nome);
 
   // Mock data para voluntários disponíveis
   const voluntariosDisponiveis = [
@@ -49,28 +39,7 @@ const Escalas = () => {
     "Pedro Costa", "Lucia Oliveira", "Ricardo Lima", "Julia Santos"
   ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Completa":
-        return "default";
-      case "Incompleta":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const handleEdit = (escala: Escala) => {
+  const handleEdit = (escala: any) => {
     setEditingEscala({ ...escala });
     setIsEditDialogOpen(true);
   };
@@ -83,7 +52,7 @@ const Escalas = () => {
       status: editingEscala.voluntarios.length === 5 ? "Completa" : "Incompleta"
     };
     
-    updateEscala(editingEscala.id, updatedData, user?.tipo || 'admin');
+    updateEscala(editingEscala.id, updatedData, 'lider');
     setIsEditDialogOpen(false);
     setEditingEscala(null);
     toast.success("Escala editada com sucesso!");
@@ -97,64 +66,46 @@ const Escalas = () => {
       return;
     }
 
-    setEditingEscala(prev => ({
-      ...prev!,
+    setEditingEscala((prev: any) => ({
+      ...prev,
       voluntarios: checked 
-        ? [...prev!.voluntarios, voluntario]
-        : prev!.voluntarios.filter(v => v !== voluntario)
+        ? [...prev.voluntarios, voluntario]
+        : prev.voluntarios.filter((v: string) => v !== voluntario)
     }));
   };
 
-  const handleDelete = (id: number) => {
-    if (confirm("Tem certeza que deseja excluir esta escala?")) {
-      deleteEscala(id, user?.tipo || 'admin');
-      toast.success("Escala excluída com sucesso!");
-    }
-  };
-
-  const handleViewDetails = (escala: Escala) => {
+  const handleViewDetails = (escala: any) => {
     setSelectedEscala(escala);
     setIsDetailDialogOpen(true);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-    toast.success("Logout realizado com sucesso");
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div className="flex items-center space-x-4 mb-6">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigate("/lider/dashboard")}
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Escalas</h1>
-            <p className="text-gray-600">Gerencie as escalas por culto e data</p>
-          </div>
-          <div className="flex space-x-2">
-            <Link to="/admin/escalas/nova">
-              <Button className="flex items-center space-x-2">
-                <Plus className="h-4 w-4" />
-                <span>Nova Escala</span>
-              </Button>
-            </Link>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Sair
-            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">Minhas Escalas</h1>
+            <p className="text-gray-600">Gerencie as escalas onde você é líder</p>
           </div>
         </div>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           <Card>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Escalas</p>
-                  <p className="text-2xl font-bold">{escalas.length}</p>
+                  <p className="text-sm font-medium text-gray-600">Total</p>
+                  <p className="text-2xl font-bold">{minhasEscalas.length}</p>
                 </div>
-                <Calendar className="h-8 w-8 text-blue-600" />
+                <Users className="h-8 w-8 text-blue-600" />
               </div>
             </CardContent>
           </Card>
@@ -165,7 +116,7 @@ const Escalas = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Completas</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {escalas.filter(e => e.status === "Completa").length}
+                    {minhasEscalas.filter(e => e.status === "Completa").length}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-green-600" />
@@ -179,77 +130,19 @@ const Escalas = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Incompletas</p>
                   <p className="text-2xl font-bold text-red-600">
-                    {escalas.filter(e => e.status === "Incompleta").length}
+                    {minhasEscalas.filter(e => e.status === "Incompleta").length}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-red-600" />
               </div>
             </CardContent>
           </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Esta Semana</p>
-                  <p className="text-2xl font-bold">4</p>
-                </div>
-                <Clock className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Próximas Escalas */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Próximas Escalas</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {escalas.slice(0, 3).map((escala) => (
-                <div key={escala.id} className="border rounded-lg p-4 bg-white">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-lg">{escala.culto}</h3>
-                    <Badge variant={getStatusColor(escala.status)}>
-                      {escala.status}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    {formatDate(escala.data)}
-                  </p>
-                  <div className="mb-3">
-                    <p className="text-sm font-medium text-blue-600">
-                      Líder: {escala.lider}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">
-                      Voluntários ({escala.voluntarios.length}/5):
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {escala.voluntarios.slice(0, 3).map((voluntario, index) => (
-                        <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          {voluntario}
-                        </span>
-                      ))}
-                      {escala.voluntarios.length > 3 && (
-                        <span className="text-xs text-gray-500">
-                          +{escala.voluntarios.length - 3} mais
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tabela de Todas as Escalas */}
+        {/* Tabela de Escalas */}
         <Card>
           <CardHeader>
-            <CardTitle>Todas as Escalas</CardTitle>
+            <CardTitle>Escalas onde você é líder</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -258,15 +151,13 @@ const Escalas = () => {
                   <TableRow>
                     <TableHead>Data</TableHead>
                     <TableHead>Culto</TableHead>
-                    <TableHead>Líder</TableHead>
                     <TableHead>Voluntários</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Criado por</TableHead>
                     <TableHead>Ações</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {escalas.map((escala) => (
+                  {minhasEscalas.map((escala) => (
                     <TableRow key={escala.id}>
                       <TableCell>
                         <div>
@@ -282,15 +173,12 @@ const Escalas = () => {
                         <span className="font-medium">{escala.culto}</span>
                       </TableCell>
                       <TableCell>
-                        <span className="text-blue-600 font-medium">{escala.lider}</span>
-                      </TableCell>
-                      <TableCell>
                         <div>
                           <p className="text-sm font-medium">
                             {escala.voluntarios.length}/5 voluntários
                           </p>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {escala.voluntarios.slice(0, 2).map((voluntario, index) => (
+                            {escala.voluntarios.slice(0, 2).map((voluntario: string, index: number) => (
                               <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
                                 {voluntario}
                               </span>
@@ -309,17 +197,6 @@ const Escalas = () => {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline">
-                          {escala.criadoPor === 'admin' ? 'Admin' : 
-                           escala.criadoPor === 'lider' ? 'Líder' : 'Sistema'}
-                        </Badge>
-                        {escala.modificadoPor && escala.modificadoPor !== escala.criadoPor && (
-                          <div className="text-xs text-gray-500 mt-1">
-                            Mod. por: {escala.modificadoPor}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>
                         <div className="flex space-x-2">
                           <Button 
                             variant="outline" 
@@ -335,15 +212,7 @@ const Escalas = () => {
                             onClick={() => handleViewDetails(escala)}
                           >
                             <Eye className="h-4 w-4 mr-1" />
-                            Ver Detalhes
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleDelete(escala.id)}
-                          >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Excluir
+                            Detalhes
                           </Button>
                         </div>
                       </TableCell>
@@ -351,6 +220,12 @@ const Escalas = () => {
                   ))}
                 </TableBody>
               </Table>
+              
+              {minhasEscalas.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Você não é líder de nenhuma escala no momento.</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -369,8 +244,8 @@ const Escalas = () => {
                     <Input
                       type="date"
                       value={editingEscala.data}
-                      onChange={(e) => setEditingEscala(prev => ({
-                        ...prev!,
+                      onChange={(e) => setEditingEscala((prev: any) => ({
+                        ...prev,
                         data: e.target.value
                       }))}
                     />
@@ -379,23 +254,12 @@ const Escalas = () => {
                     <Label>Culto</Label>
                     <Input
                       value={editingEscala.culto}
-                      onChange={(e) => setEditingEscala(prev => ({
-                        ...prev!,
+                      onChange={(e) => setEditingEscala((prev: any) => ({
+                        ...prev,
                         culto: e.target.value
                       }))}
                     />
                   </div>
-                </div>
-
-                <div>
-                  <Label>Líder</Label>
-                  <Input
-                    value={editingEscala.lider}
-                    onChange={(e) => setEditingEscala(prev => ({
-                      ...prev!,
-                      lider: e.target.value
-                    }))}
-                  />
                 </div>
 
                 <div>
@@ -443,20 +307,19 @@ const Escalas = () => {
                 <div>
                   <h4 className="font-medium">{selectedEscala.culto}</h4>
                   <p className="text-sm text-gray-600">
-                    {formatDate(selectedEscala.data)}
-                  </p>
-                </div>
-                
-                <div>
-                  <p className="text-sm font-medium text-blue-600">
-                    Líder: {selectedEscala.lider}
+                    {new Date(selectedEscala.data).toLocaleDateString('pt-BR', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </p>
                 </div>
 
                 <div>
                   <h5 className="font-medium mb-2">Voluntários escalados:</h5>
                   <div className="space-y-1">
-                    {selectedEscala.voluntarios.map((voluntario, index) => (
+                    {selectedEscala.voluntarios.map((voluntario: string, index: number) => (
                       <div key={index} className="text-sm bg-gray-100 px-3 py-2 rounded">
                         {voluntario}
                       </div>
@@ -464,7 +327,7 @@ const Escalas = () => {
                   </div>
                 </div>
 
-                <Badge variant={getStatusColor(selectedEscala.status)}>
+                <Badge variant={selectedEscala.status === "Completa" ? "default" : "destructive"}>
                   {selectedEscala.status}
                 </Badge>
               </div>
@@ -476,4 +339,4 @@ const Escalas = () => {
   );
 };
 
-export default Escalas;
+export default LiderEscalas;

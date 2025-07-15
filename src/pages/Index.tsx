@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,15 +8,17 @@ import {
   Clock, 
   Users, 
   CheckCircle,
-  Settings
+  Settings,
+  LogOut
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useEscalas } from "@/contexts/EscalasContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { escalas } = useEscalas();
+  const { logout } = useAuth();
   
   const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
     { 
@@ -38,48 +39,83 @@ const Index = () => {
   
   const handleAprovarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
-    toast({
-      title: "Substituição aprovada",
-      description: "Substituição aprovada com sucesso!",
-    });
+    toast.success("Substituição aprovada com sucesso!");
     console.log("Substituição aprovada:", id);
   };
 
   const handleRecusarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
-    toast({
-      title: "Substituição recusada", 
-      description: "Substituição recusada",
-      variant: "destructive"
-    });
+    toast.error("Substituição recusada");
     console.log("Substituição recusada:", id);
   };
 
   const handleGerarEscala = () => {
-    toast({
-      title: "Gerando escala",
-      description: "Gerando nova escala automaticamente...",
-    });
+    toast.success("Redirecionando para criação de escala...");
     console.log("Gerando escala automática");
     setTimeout(() => {
       navigate('/admin/escalas/nova');
-    }, 1500);
+    }, 1000);
   };
 
-  const handleEnviarLembretes = () => {
-    toast({
-      title: "Lembretes enviados",
-      description: "Lembretes enviados via WhatsApp!",
-    });
-    console.log("Enviando lembretes");
+  const handleEnviarLembretes = async () => {
+    toast.info("Enviando lembretes via WhatsApp...");
+    
+    // Simular envio real de lembretes
+    const voluntarios = ["João Silva", "Ana Santos", "Carlos Oliveira", "Maria Silva"];
+    
+    try {
+      // Aqui você integraria com a API do WhatsApp
+      for (const voluntario of voluntarios) {
+        const numero = "5511999999999"; // número do voluntário
+        const mensagem = `Olá ${voluntario}! Lembrete: você está escalado para o próximo culto. Confirme sua presença.`;
+        
+        // URL para WhatsApp Web/API
+        const urlWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+        
+        // Em produção, você usaria uma API do WhatsApp Business
+        console.log(`Enviando lembrete para ${voluntario}: ${urlWhatsApp}`);
+      }
+      
+      setTimeout(() => {
+        toast.success(`Lembretes enviados para ${voluntarios.length} voluntários via WhatsApp!`);
+      }, 2000);
+    } catch (error) {
+      toast.error("Erro ao enviar lembretes");
+      console.error("Erro:", error);
+    }
   };
 
-  const handleSincronizarDados = () => {
-    toast({
-      title: "Sincronizando dados",
-      description: "Sincronizando dados com Google Sheets...",
-    });
-    console.log("Sincronizando dados");
+  const handleSincronizarDados = async () => {
+    toast.info("Sincronizando dados com Google Sheets...");
+    
+    try {
+      // Aqui você integraria com a API do Google Sheets
+      const dadosEscalas = escalas.map(escala => ({
+        data: escala.data,
+        culto: escala.culto,
+        lider: escala.lider,
+        voluntarios: escala.voluntarios.join(", "),
+        status: escala.status
+      }));
+      
+      // Simular sincronização
+      console.log("Dados para sincronizar:", dadosEscalas);
+      
+      // Em produção, você faria a chamada para a API do Google Sheets
+      setTimeout(() => {
+        toast.success("Dados sincronizados com Google Sheets com sucesso!");
+      }, 3000);
+      
+    } catch (error) {
+      toast.error("Erro ao sincronizar dados");
+      console.error("Erro:", error);
+    }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    toast.success("Logout realizado com sucesso");
   };
 
   const estatisticas = {
@@ -100,9 +136,15 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Administrativo</h1>
-          <p className="text-gray-600">Visão geral do sistema de escalas</p>
+        <div className="mb-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard Administrativo</h1>
+            <p className="text-gray-600">Visão geral do sistema de escalas</p>
+          </div>
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Sair
+          </Button>
         </div>
 
         {/* Cards de Estatísticas */}

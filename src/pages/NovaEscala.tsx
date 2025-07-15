@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Save, CalendarIcon, Users, AlertTriangle, Wand2 } from "lucide-react";
 import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useEscalas } from "@/contexts/EscalasContext";
@@ -148,7 +149,7 @@ const NovaEscala = () => {
       addEscala(escalaData);
 
       toast.success("Escala criada com sucesso!");
-      navigate("/admin/escalas");
+      navigate("/");
     } catch (error) {
       console.error("Erro ao criar escala:", error);
       toast.error("Erro ao criar escala. Tente novamente.");
@@ -197,7 +198,7 @@ const NovaEscala = () => {
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {date ? format(date, "PPP") : "Selecione uma data"}
+                        {date ? format(date, "PPP", { locale: ptBR }) : "Selecione uma data"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -205,6 +206,8 @@ const NovaEscala = () => {
                         mode="single"
                         selected={date}
                         onSelect={setDate}
+                        locale={ptBR}
+                        weekStartsOn={0}
                         className="pointer-events-auto"
                       />
                     </PopoverContent>
