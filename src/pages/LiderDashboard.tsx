@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEscalas } from "@/contexts/EscalasContext";
 import { toast } from "sonner";
@@ -20,6 +24,13 @@ import {
   Phone,
   Bell
 } from "lucide-react";
+
+interface Voluntario {
+  id: number;
+  nome: string;
+  celular: string;
+  status: string;
+}
 
 const LiderDashboard = () => {
   const { user, logout } = useAuth();
@@ -39,12 +50,23 @@ const LiderDashboard = () => {
     }
   ]);
 
-  const [voluntariosEquipe] = useState([
+  // Lista completa de voluntários do sistema
+  const [voluntariosEquipe] = useState<Voluntario[]>([
     { id: 1, nome: "João Silva", celular: "11999999999", status: "ativo" },
     { id: 2, nome: "Maria Santos", celular: "11888888888", status: "ativo" },
     { id: 3, nome: "Pedro Lima", celular: "11777777777", status: "inativo" },
     { id: 4, nome: "Ana Costa", celular: "11666666666", status: "ativo" },
+    { id: 5, nome: "Carlos Oliveira", celular: "11555555555", status: "ativo" },
+    { id: 6, nome: "Lucia Santos", celular: "11444444444", status: "ativo" },
+    { id: 7, nome: "Rafael Pereira", celular: "11333333333", status: "inativo" },
+    { id: 8, nome: "Julia Costa", celular: "11222222222", status: "ativo" },
   ]);
+
+  // Estados para modais
+  const [isConvocarModalOpen, setIsConvocarModalOpen] = useState(false);
+  const [isAvisosModalOpen, setIsAvisosModalOpen] = useState(false);
+  const [selectedVoluntarios, setSelectedVoluntarios] = useState<number[]>([]);
+  const [mensagemAviso, setMensagemAviso] = useState("");
 
   // Monitorar mudanças nas escalas para notificar
   useEffect(() => {
@@ -97,11 +119,37 @@ const LiderDashboard = () => {
     toast.success(`Contato iniciado com ${nome}`);
   };
 
-  const handleConvocarVoluntarios = () => {
-    const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
-    
-    // Enviar notificação para cada voluntário ativo via WhatsApp
-    voluntariosAtivos.forEach(voluntario => {
+  const handleOpenConvocarModal = () => {
+    setSelectedVoluntarios([]);
+    setIsConvocarModalOpen(true);
+  };
+
+  const handleOpenAvisosModal = () => {
+    setSelectedVoluntarios([]);
+    setMensagemAviso("📢 Aviso importante: Lembrete sobre as próximas escalas. Mantenha-se atento às suas responsabilidades. Qualquer dúvida, entre em contato.");
+    setIsAvisosModalOpen(true);
+  };
+
+  const handleVoluntarioSelection = (voluntarioId: number, checked: boolean) => {
+    if (checked) {
+      setSelectedVoluntarios(prev => [...prev, voluntarioId]);
+    } else {
+      setSelectedVoluntarios(prev => prev.filter(id => id !== voluntarioId));
+    }
+  };
+
+  const handleConvocarSelecionados = () => {
+    if (selectedVoluntarios.length === 0) {
+      toast.error("Selecione pelo menos um voluntário");
+      return;
+    }
+
+    const voluntariosSelecionados = voluntariosEquipe.filter(v => 
+      selectedVoluntarios.includes(v.id) && v.status === 'ativo'
+    );
+
+    // Enviar mensagem via WhatsApp para cada voluntário selecionado
+    voluntariosSelecionados.forEach((voluntario, index) => {
       const numeroLimpo = voluntario.celular.replace(/\D/g, '');
       const mensagem = `Olá ${voluntario.nome}! Você foi convocado para uma nova escala. Por favor, confirme sua disponibilidade. Atenciosamente, ${user?.nome || 'Líder'}`;
       const url = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
@@ -109,44 +157,61 @@ const LiderDashboard = () => {
       // Abrir WhatsApp Web em nova aba para cada voluntário
       setTimeout(() => {
         window.open(url, '_blank');
-      }, 1000 * voluntariosAtivos.indexOf(voluntario)); // Delay de 1 segundo entre cada abertura
+      }, 1000 * index); // Delay de 1 segundo entre cada abertura
     });
-    
+
     // Notificar voluntários através do sistema
     const notificacoes = JSON.parse(localStorage.getItem('voluntario_notifications') || '[]');
-    notificacoes.push(`Você foi convocado pelo líder ${user?.nome} para uma nova escala`);
+    voluntariosSelecionados.forEach(voluntario => {
+      notificacoes.push(`Você foi convocado pelo líder ${user?.nome} para uma nova escala`);
+    });
     localStorage.setItem('voluntario_notifications', JSON.stringify(notificacoes));
+
+    toast.success(`${voluntariosSelecionados.length} voluntários foram convocados via WhatsApp e notificados no sistema`);
     
-    toast.success(`${voluntariosAtivos.length} voluntários foram convocados via WhatsApp e notificados no sistema`);
-    
-    console.log("Convocando voluntários:", voluntariosAtivos);
+    setIsConvocarModalOpen(false);
+    setSelectedVoluntarios([]);
   };
 
-  const handleEnviarAvisos = () => {
-    const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
-    
-    // Criar aviso personalizado para cada voluntário
-    voluntariosAtivos.forEach(voluntario => {
+  const handleEnviarAvisosSelecionados = () => {
+    if (selectedVoluntarios.length === 0) {
+      toast.error("Selecione pelo menos um voluntário");
+      return;
+    }
+
+    if (!mensagemAviso.trim()) {
+      toast.error("Digite uma mensagem para enviar");
+      return;
+    }
+
+    const voluntariosSelecionados = voluntariosEquipe.filter(v => 
+      selectedVoluntarios.includes(v.id) && v.status === 'ativo'
+    );
+
+    // Enviar aviso personalizado para cada voluntário selecionado
+    voluntariosSelecionados.forEach((voluntario, index) => {
       const numeroLimpo = voluntario.celular.replace(/\D/g, '');
-      const mensagem = `📢 Aviso importante: Lembrete sobre as próximas escalas. Mantenha-se atento às suas responsabilidades. Qualquer dúvida, entre em contato. Atenciosamente, ${user?.nome || 'Líder'}`;
-      const url = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+      const mensagemCompleta = `${mensagemAviso}\n\nAtenciosamente, ${user?.nome || 'Líder'}`;
+      const url = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagemCompleta)}`;
       
       // Abrir WhatsApp Web em nova aba para cada voluntário
       setTimeout(() => {
         window.open(url, '_blank');
-      }, 1500 * voluntariosAtivos.indexOf(voluntario)); // Delay de 1.5 segundos entre cada abertura
+      }, 1500 * index); // Delay de 1.5 segundos entre cada abertura
     });
-    
+
     // Notificar voluntários através do sistema
     const notificacoes = JSON.parse(localStorage.getItem('voluntario_notifications') || '[]');
-    notificacoes.push(`📢 Novo aviso do líder ${user?.nome}: Informações importantes sobre as escalas`);
+    voluntariosSelecionados.forEach(voluntario => {
+      notificacoes.push(`📢 Novo aviso do líder ${user?.nome}: ${mensagemAviso}`);
+    });
     localStorage.setItem('voluntario_notifications', JSON.stringify(notificacoes));
+
+    toast.success(`Avisos enviados para ${voluntariosSelecionados.length} voluntários via WhatsApp e sistema de notificações`);
     
-    toast.success(`Avisos enviados para ${voluntariosAtivos.length} voluntários via WhatsApp e sistema de notificações`);
-    
-    setTimeout(() => {
-      toast.info("Todos os voluntários foram notificados com sucesso através de múltiplos canais");
-    }, 2000);
+    setIsAvisosModalOpen(false);
+    setSelectedVoluntarios([]);
+    setMensagemAviso("");
   };
 
   const handleEditarEscala = (escalaId: number) => {
@@ -429,7 +494,7 @@ const LiderDashboard = () => {
               <Button 
                 variant="outline" 
                 className="h-auto p-4 flex-col space-y-2" 
-                onClick={handleConvocarVoluntarios}
+                onClick={handleOpenConvocarModal}
               >
                 <Users className="h-6 w-6" />
                 <span>Convocar Voluntários</span>
@@ -438,7 +503,7 @@ const LiderDashboard = () => {
               <Button 
                 variant="outline" 
                 className="h-auto p-4 flex-col space-y-2" 
-                onClick={handleEnviarAvisos}
+                onClick={handleOpenAvisosModal}
               >
                 <MessageCircle className="h-6 w-6" />
                 <span>Enviar Avisos</span>
@@ -454,6 +519,126 @@ const LiderDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal Convocar Voluntários */}
+      <Dialog open={isConvocarModalOpen} onOpenChange={setIsConvocarModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Convocar Voluntários</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">
+              Selecione os voluntários que deseja convocar via WhatsApp:
+            </p>
+            <div className="space-y-3">
+              {voluntariosEquipe.map((voluntario) => (
+                <div key={voluntario.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      checked={selectedVoluntarios.includes(voluntario.id)}
+                      onCheckedChange={(checked) => 
+                        handleVoluntarioSelection(voluntario.id, checked as boolean)
+                      }
+                      disabled={voluntario.status === 'inativo'}
+                    />
+                    <div>
+                      <p className="font-medium">{voluntario.nome}</p>
+                      <p className="text-sm text-gray-500 flex items-center">
+                        <Phone className="h-3 w-3 mr-1" />
+                        {voluntario.celular}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={voluntario.status === 'ativo' ? 'default' : 'secondary'}>
+                    {voluntario.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+            <div className="flex space-x-2 pt-4">
+              <Button 
+                onClick={handleConvocarSelecionados}
+                disabled={selectedVoluntarios.length === 0}
+                className="flex-1"
+              >
+                Convocar Selecionados ({selectedVoluntarios.length})
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setIsConvocarModalOpen(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Enviar Avisos */}
+      <Dialog open={isAvisosModalOpen} onOpenChange={setIsAvisosModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Enviar Avisos</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="mensagem">Mensagem do Aviso</Label>
+              <Textarea
+                id="mensagem"
+                value={mensagemAviso}
+                onChange={(e) => setMensagemAviso(e.target.value)}
+                rows={4}
+                placeholder="Digite sua mensagem aqui..."
+              />
+            </div>
+            <p className="text-sm text-gray-600">
+              Selecione os voluntários que receberão o aviso via WhatsApp:
+            </p>
+            <div className="space-y-3">
+              {voluntariosEquipe.map((voluntario) => (
+                <div key={voluntario.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <Checkbox
+                      checked={selectedVoluntarios.includes(voluntario.id)}
+                      onCheckedChange={(checked) => 
+                        handleVoluntarioSelection(voluntario.id, checked as boolean)
+                      }
+                      disabled={voluntario.status === 'inativo'}
+                    />
+                    <div>
+                      <p className="font-medium">{voluntario.nome}</p>
+                      <p className="text-sm text-gray-500 flex items-center">
+                        <Phone className="h-3 w-3 mr-1" />
+                        {voluntario.celular}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge variant={voluntario.status === 'ativo' ? 'default' : 'secondary'}>
+                    {voluntario.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+            <div className="flex space-x-2 pt-4">
+              <Button 
+                onClick={handleEnviarAvisosSelecionados}
+                disabled={selectedVoluntarios.length === 0 || !mensagemAviso.trim()}
+                className="flex-1"
+              >
+                Enviar para Selecionados ({selectedVoluntarios.length})
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => setIsAvisosModalOpen(false)}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
