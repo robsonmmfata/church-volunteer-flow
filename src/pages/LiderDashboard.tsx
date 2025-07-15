@@ -61,7 +61,7 @@ const LiderDashboard = () => {
         duration: 5000,
         action: {
           label: "Ver",
-          onClick: () => navigate('/admin/escalas')
+          onClick: () => navigate('/lider/escalas')
         }
       });
     }
@@ -100,7 +100,24 @@ const LiderDashboard = () => {
   const handleConvocarVoluntarios = () => {
     const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
     
-    toast.success(`${voluntariosAtivos.length} voluntários foram convocados via WhatsApp`);
+    // Enviar notificação para cada voluntário ativo via WhatsApp
+    voluntariosAtivos.forEach(voluntario => {
+      const numeroLimpo = voluntario.celular.replace(/\D/g, '');
+      const mensagem = `Olá ${voluntario.nome}! Você foi convocado para uma nova escala. Por favor, confirme sua disponibilidade. Atenciosamente, ${user?.nome || 'Líder'}`;
+      const url = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+      
+      // Abrir WhatsApp Web em nova aba para cada voluntário
+      setTimeout(() => {
+        window.open(url, '_blank');
+      }, 1000 * voluntariosAtivos.indexOf(voluntario)); // Delay de 1 segundo entre cada abertura
+    });
+    
+    // Notificar voluntários através do sistema
+    const notificacoes = JSON.parse(localStorage.getItem('voluntario_notifications') || '[]');
+    notificacoes.push(`Você foi convocado pelo líder ${user?.nome} para uma nova escala`);
+    localStorage.setItem('voluntario_notifications', JSON.stringify(notificacoes));
+    
+    toast.success(`${voluntariosAtivos.length} voluntários foram convocados via WhatsApp e notificados no sistema`);
     
     console.log("Convocando voluntários:", voluntariosAtivos);
   };
@@ -108,10 +125,27 @@ const LiderDashboard = () => {
   const handleEnviarAvisos = () => {
     const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
     
-    toast.info(`Aviso será enviado para ${voluntariosAtivos.length} voluntários`);
+    // Criar aviso personalizado para cada voluntário
+    voluntariosAtivos.forEach(voluntario => {
+      const numeroLimpo = voluntario.celular.replace(/\D/g, '');
+      const mensagem = `📢 Aviso importante: Lembrete sobre as próximas escalas. Mantenha-se atento às suas responsabilidades. Qualquer dúvida, entre em contato. Atenciosamente, ${user?.nome || 'Líder'}`;
+      const url = `https://wa.me/55${numeroLimpo}?text=${encodeURIComponent(mensagem)}`;
+      
+      // Abrir WhatsApp Web em nova aba para cada voluntário
+      setTimeout(() => {
+        window.open(url, '_blank');
+      }, 1500 * voluntariosAtivos.indexOf(voluntario)); // Delay de 1.5 segundos entre cada abertura
+    });
+    
+    // Notificar voluntários através do sistema
+    const notificacoes = JSON.parse(localStorage.getItem('voluntario_notifications') || '[]');
+    notificacoes.push(`📢 Novo aviso do líder ${user?.nome}: Informações importantes sobre as escalas`);
+    localStorage.setItem('voluntario_notifications', JSON.stringify(notificacoes));
+    
+    toast.success(`Avisos enviados para ${voluntariosAtivos.length} voluntários via WhatsApp e sistema de notificações`);
     
     setTimeout(() => {
-      toast.success("Todos os voluntários foram notificados com sucesso");
+      toast.info("Todos os voluntários foram notificados com sucesso através de múltiplos canais");
     }, 2000);
   };
 
@@ -162,7 +196,7 @@ const LiderDashboard = () => {
                 Início
               </Button>
             </Link>
-            <Link to="/lider/perfil">
+            <Link to="/perfil-usuario">
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
                 Perfil
@@ -235,7 +269,6 @@ const LiderDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Minhas Escalas */}
           <Card>
             <CardHeader>
               <CardTitle>Minhas Escalas como Líder</CardTitle>
@@ -292,7 +325,6 @@ const LiderDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Solicitações de Substituição */}
           <Card>
             <CardHeader>
               <CardTitle>Substituições Pendentes</CardTitle>
@@ -387,7 +419,7 @@ const LiderDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Link to="/admin/escalas">
+              <Link to="/lider/escalas">
                 <Button className="h-auto p-4 flex-col space-y-2 w-full">
                   <Calendar className="h-6 w-6" />
                   <span>Gerenciar Escalas</span>
@@ -412,7 +444,7 @@ const LiderDashboard = () => {
                 <span>Enviar Avisos</span>
               </Button>
               
-              <Link to="/lider/perfil">
+              <Link to="/perfil-usuario">
                 <Button variant="outline" className="h-auto p-4 flex-col space-y-2 w-full">
                   <Settings className="h-6 w-6" />
                   <span>Configurações</span>

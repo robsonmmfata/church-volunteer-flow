@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,8 @@ const VoluntarioDashboard = () => {
     { id: 1, data: "2024-01-21", culto: "Quarta 20h", solicitante: "Maria Santos" }
   ]);
 
+  const [notificacoes, setNotificacoes] = useState<string[]>([]);
+
   // Monitorar mudanças nas escalas para notificar voluntários
   useEffect(() => {
     const escalasMaisRecentes = escalas.filter(escala => {
@@ -68,6 +71,25 @@ const VoluntarioDashboard = () => {
       });
     }
   }, [escalas, user?.nome]);
+
+  // Escutar notificações do localStorage
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const novasNotificacoes = JSON.parse(localStorage.getItem('voluntario_notifications') || '[]');
+      if (novasNotificacoes.length > 0) {
+        novasNotificacoes.forEach((notif: string) => {
+          toast.info(notif, { duration: 5000 });
+        });
+        setNotificacoes(prev => [...prev, ...novasNotificacoes]);
+        localStorage.removeItem('voluntario_notifications');
+      }
+    };
+
+    // Verificar notificações a cada segundo
+    const interval = setInterval(handleStorageChange, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -98,9 +120,32 @@ const VoluntarioDashboard = () => {
     );
     
     if (escalaHoje) {
-      toast.success(`Escala de hoje - Você está escalado para: ${escalaHoje.culto}`);
+      toast.success(`Escala de hoje - Você está escalado para: ${escalaHoje.culto}`, {
+        duration: 8000,
+        action: {
+          label: "Ver Detalhes",
+          onClick: () => {
+            toast.info(`Detalhes da Escala:
+            Data: ${new Date(escalaHoje.data).toLocaleDateString('pt-BR')}
+            Culto: ${escalaHoje.culto}
+            Líder: ${escalaHoje.lider}
+            Status: Confirmado`, { duration: 10000 });
+          }
+        }
+      });
     } else {
-      toast.info("Sem escala hoje - Você não está escalado para hoje");
+      // Verificar próxima escala
+      const proximaEscala = minhasEscalas
+        .filter(escala => new Date(escala.data) > new Date())
+        .sort((a, b) => new Date(a.data).getTime() - new Date(b.data).getTime())[0];
+      
+      if (proximaEscala) {
+        toast.info(`Sem escala hoje - Próxima escala: ${proximaEscala.culto} em ${new Date(proximaEscala.data).toLocaleDateString('pt-BR')}`, {
+          duration: 8000
+        });
+      } else {
+        toast.info("Sem escala hoje - Você não tem escalas programadas");
+      }
     }
   };
 
@@ -129,7 +174,7 @@ const VoluntarioDashboard = () => {
           <div className="flex space-x-2">
             <Button variant="outline" size="sm">
               <Bell className="h-4 w-4 mr-2" />
-              Notificações
+              Notificações {notificacoes.length > 0 && <span className="ml-1 bg-red-500 text-white text-xs rounded-full px-1">{notificacoes.length}</span>}
             </Button>
             <Link to="/">
               <Button variant="outline" size="sm">
@@ -137,7 +182,7 @@ const VoluntarioDashboard = () => {
                 Início
               </Button>
             </Link>
-            <Link to="/voluntario/perfil">
+            <Link to="/perfil-usuario">
               <Button variant="outline" size="sm">
                 <Settings className="h-4 w-4 mr-2" />
                 Perfil
@@ -195,7 +240,6 @@ const VoluntarioDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Próximas Escalas */}
           <Card>
             <CardHeader>
               <CardTitle>Minhas Próximas Escalas</CardTitle>
@@ -250,7 +294,6 @@ const VoluntarioDashboard = () => {
             </CardContent>
           </Card>
 
-          {/* Solicitações de Substituição */}
           <Card>
             <CardHeader>
               <CardTitle>Solicitações de Substituição</CardTitle>
@@ -298,7 +341,6 @@ const VoluntarioDashboard = () => {
           </Card>
         </div>
 
-        {/* Ações Rápidas */}
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Ações Rápidas</CardTitle>
@@ -328,7 +370,7 @@ const VoluntarioDashboard = () => {
                 <span>Ver Escala do Dia</span>
               </Button>
               
-              <Link to="/voluntario/perfil">
+              <Link to="/perfil-usuario">
                 <Button variant="outline" className="h-auto p-4 flex-col space-y-2 w-full">
                   <Settings className="h-6 w-6" />
                   <span>Atualizar Perfil</span>
