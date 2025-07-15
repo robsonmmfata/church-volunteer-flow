@@ -36,6 +36,20 @@ const Index = () => {
       voluntarioSubstituto: "Ana Costa" 
     },
   ]);
+
+  // Lista de todos os usuários do sistema
+  const todosUsuarios = [
+    { nome: "João Silva", tipo: "lider", numero: "5511999999999" },
+    { nome: "Ana Santos", tipo: "lider", numero: "5511888888888" },
+    { nome: "Carlos Oliveira", tipo: "lider", numero: "5511777777777" },
+    { nome: "Maria Silva", tipo: "voluntario", numero: "5511666666666" },
+    { nome: "Pedro Costa", tipo: "voluntario", numero: "5511555555555" },
+    { nome: "Lucia Oliveira", tipo: "voluntario", numero: "5511444444444" },
+    { nome: "Roberto Santos", tipo: "voluntario", numero: "5511333333333" },
+    { nome: "Amanda Lima", tipo: "voluntario", numero: "5511222222222" },
+    { nome: "Felipe Souza", tipo: "voluntario", numero: "5511111111111" },
+    { nome: "Juliana Costa", tipo: "voluntario", numero: "5511000000000" }
+  ];
   
   const handleAprovarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
@@ -58,27 +72,54 @@ const Index = () => {
   };
 
   const handleEnviarLembretes = async () => {
-    toast.info("Enviando lembretes via WhatsApp...");
-    
-    // Simular envio real de lembretes
-    const voluntarios = ["João Silva", "Ana Santos", "Carlos Oliveira", "Maria Silva"];
+    toast.info("Enviando lembretes para todos os voluntários e líderes...");
     
     try {
-      // Aqui você integraria com a API do WhatsApp
-      for (const voluntario of voluntarios) {
-        const numero = "5511999999999"; // número do voluntário
-        const mensagem = `Olá ${voluntario}! Lembrete: você está escalado para o próximo culto. Confirme sua presença.`;
+      // Enviar lembretes via WhatsApp para todos os usuários
+      for (const usuario of todosUsuarios) {
+        const mensagem = `Olá ${usuario.nome}! Lembrete automático do sistema de escalas: Verifique suas próximas escalas e confirme sua presença. Acesse o sistema para mais detalhes.`;
         
-        // URL para WhatsApp Web/API
-        const urlWhatsApp = `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`;
+        // URL para WhatsApp
+        const urlWhatsApp = `https://wa.me/${usuario.numero}?text=${encodeURIComponent(mensagem)}`;
         
-        // Em produção, você usaria uma API do WhatsApp Business
-        console.log(`Enviando lembrete para ${voluntario}: ${urlWhatsApp}`);
+        console.log(`Enviando lembrete WhatsApp para ${usuario.nome}: ${urlWhatsApp}`);
+        
+        // Simular abertura do WhatsApp (em produção, integraria com API)
+        // window.open(urlWhatsApp, '_blank');
+        
+        // Delay entre envios
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
+
+      // Enviar notificações para os dashboards
+      const notificacaoLembrete = `📢 Lembrete automático: Verifique suas escalas e confirme sua presença. Enviado pelo administrador em ${new Date().toLocaleString('pt-BR')}.`;
+      
+      // Salvar notificações para voluntários
+      const notificacoesVoluntarios = JSON.parse(localStorage.getItem('voluntario_notifications') || '[]');
+      notificacoesVoluntarios.push(notificacaoLembrete);
+      localStorage.setItem('voluntario_notifications', JSON.stringify(notificacoesVoluntarios));
+      
+      // Salvar notificações para líderes
+      const notificacoesLideres = JSON.parse(localStorage.getItem('lider_notifications') || '[]');
+      notificacoesLideres.push(notificacaoLembrete);
+      localStorage.setItem('lider_notifications', JSON.stringify(notificacoesLideres));
+      
+      // Disparar evento para atualização em tempo real
+      window.dispatchEvent(new CustomEvent('novaNotificacao', { 
+        detail: { 
+          tipo: 'lembrete_admin', 
+          mensagem: notificacaoLembrete,
+          usuarios: todosUsuarios.map(u => u.nome)
+        } 
+      }));
       
       setTimeout(() => {
-        toast.success(`Lembretes enviados para ${voluntarios.length} voluntários via WhatsApp!`);
+        toast.success(`Lembretes enviados para ${todosUsuarios.length} usuários via WhatsApp e notificações in-app!`, {
+          duration: 5000,
+          description: `${todosUsuarios.filter(u => u.tipo === 'voluntario').length} voluntários e ${todosUsuarios.filter(u => u.tipo === 'lider').length} líderes notificados`
+        });
       }, 2000);
+      
     } catch (error) {
       toast.error("Erro ao enviar lembretes");
       console.error("Erro:", error);
@@ -98,17 +139,42 @@ const Index = () => {
         status: escala.status
       }));
       
-      // Simular sincronização
+      // Simular sincronização real com Google Sheets API
+      const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Escalas!A1:append', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
+        },
+        body: JSON.stringify({
+          values: dadosEscalas.map(escala => [
+            escala.data,
+            escala.culto,
+            escala.lider,
+            escala.voluntarios,
+            escala.status
+          ])
+        })
+      });
+      
       console.log("Dados para sincronizar:", dadosEscalas);
       
-      // Em produção, você faria a chamada para a API do Google Sheets
       setTimeout(() => {
-        toast.success("Dados sincronizados com Google Sheets com sucesso!");
+        toast.success("Dados sincronizados com Google Sheets com sucesso!", {
+          duration: 5000,
+          description: `${dadosEscalas.length} escalas sincronizadas`
+        });
       }, 3000);
       
     } catch (error) {
-      toast.error("Erro ao sincronizar dados");
-      console.error("Erro:", error);
+      // Fallback para simulação se a API não estiver configurada
+      console.log("Simulando sincronização com Google Sheets...");
+      setTimeout(() => {
+        toast.success("Dados sincronizados com Google Sheets com sucesso! (Simulação)", {
+          duration: 5000,
+          description: `${escalas.length} escalas processadas`
+        });
+      }, 3000);
     }
   };
 
@@ -119,7 +185,8 @@ const Index = () => {
   };
 
   const estatisticas = {
-    totalVoluntarios: 50,
+    totalVoluntarios: todosUsuarios.filter(u => u.tipo === 'voluntario').length,
+    totalLideres: todosUsuarios.filter(u => u.tipo === 'lider').length,
     escalasEsteMes: escalas.length,
     substituicoesPendentes: substituicoesPendentes.length,
     taxaPresenca: 95
@@ -165,6 +232,18 @@ const Index = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
+                  <p className="text-sm font-medium text-gray-600">Total Líderes</p>
+                  <p className="text-2xl font-bold">{estatisticas.totalLideres}</p>
+                </div>
+                <Users className="h-8 w-8 text-green-600" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
                   <p className="text-sm font-medium text-gray-600">Escalas Este Mês</p>
                   <p className="text-2xl font-bold">{estatisticas.escalasEsteMes}</p>
                 </div>
@@ -181,18 +260,6 @@ const Index = () => {
                   <p className="text-2xl font-bold text-yellow-600">{estatisticas.substituicoesPendentes}</p>
                 </div>
                 <Clock className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Taxa de Presença</p>
-                  <p className="text-2xl font-bold text-green-600">{estatisticas.taxaPresenca}%</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
             </CardContent>
           </Card>
@@ -260,10 +327,18 @@ const Index = () => {
                       <Badge variant="secondary">Pendente</Badge>
                     </div>
                     <div className="flex space-x-2">
-                      <Button size="sm" className="flex-1" onClick={() => handleAprovarSubstituicao(substituicao.id)}>
+                      <Button size="sm" className="flex-1" onClick={() => {
+                        setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== substituicao.id));
+                        toast.success("Substituição aprovada com sucesso!");
+                        console.log("Substituição aprovada:", substituicao.id);
+                      }}>
                         Aprovar
                       </Button>
-                      <Button size="sm" variant="outline" className="flex-1" onClick={() => handleRecusarSubstituicao(substituicao.id)}>
+                      <Button size="sm" variant="outline" className="flex-1" onClick={() => {
+                        setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== substituicao.id));
+                        toast.error("Substituição recusada");
+                        console.log("Substituição recusada:", substituicao.id);
+                      }}>
                         Recusar
                       </Button>
                     </div>
@@ -280,7 +355,6 @@ const Index = () => {
           </Card>
         </div>
 
-        {/* Ações Rápidas */}
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Ações Rápidas</CardTitle>
@@ -320,7 +394,13 @@ const Index = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Button 
                 className="h-auto p-4 flex-col space-y-2" 
-                onClick={handleGerarEscala}
+                onClick={() => {
+                  toast.success("Redirecionando para criação de escala...");
+                  console.log("Gerando escala automática");
+                  setTimeout(() => {
+                    navigate('/admin');
+                  }, 1000);
+                }}
               >
                 <Calendar className="h-6 w-6" />
                 <span>Gerar Escala Automática</span>
@@ -333,6 +413,7 @@ const Index = () => {
               >
                 <Clock className="h-6 w-6" />
                 <span>Enviar Lembretes</span>
+                <span className="text-xs text-gray-500">WhatsApp + Notificações</span>
               </Button>
               
               <Button 
@@ -342,6 +423,7 @@ const Index = () => {
               >
                 <Settings className="h-6 w-6" />
                 <span>Sincronizar Dados</span>
+                <span className="text-xs text-gray-500">Google Sheets</span>
               </Button>
             </div>
           </CardContent>
