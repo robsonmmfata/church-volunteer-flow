@@ -76,10 +76,7 @@ const LiderDashboard = () => {
   const handleAprovarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
-    toast({
-      title: "Substituição aprovada",
-      description: "A substituição foi aprovada com sucesso."
-    });
+    toast.success("Substituição aprovada com sucesso");
     
     console.log("Substituição aprovada pelo líder:", id);
   };
@@ -87,10 +84,7 @@ const LiderDashboard = () => {
   const handleRecusarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
-    toast({
-      title: "Substituição recusada",
-      description: "A substituição foi recusada."
-    });
+    toast.error("Substituição recusada");
     
     console.log("Substituição recusada pelo líder:", id);
   };
@@ -100,19 +94,13 @@ const LiderDashboard = () => {
     const url = `https://wa.me/55${numeroLimpo}?text=Olá ${nome}, tudo bem? Sou o líder da escala.`;
     window.open(url, '_blank');
     
-    toast({
-      title: "WhatsApp aberto",
-      description: `Contato iniciado com ${nome}`
-    });
+    toast.success(`Contato iniciado com ${nome}`);
   };
 
   const handleConvocarVoluntarios = () => {
     const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
     
-    toast({
-      title: "Convocação enviada",
-      description: `${voluntariosAtivos.length} voluntários foram convocados via WhatsApp.`
-    });
+    toast.success(`${voluntariosAtivos.length} voluntários foram convocados via WhatsApp`);
     
     console.log("Convocando voluntários:", voluntariosAtivos);
   };
@@ -120,16 +108,10 @@ const LiderDashboard = () => {
   const handleEnviarAvisos = () => {
     const voluntariosAtivos = voluntariosEquipe.filter(v => v.status === 'ativo');
     
-    toast({
-      title: "Enviando avisos",
-      description: `Aviso será enviado para ${voluntariosAtivos.length} voluntários.`
-    });
+    toast.info(`Aviso será enviado para ${voluntariosAtivos.length} voluntários`);
     
     setTimeout(() => {
-      toast({
-        title: "Avisos enviados",
-        description: "Todos os voluntários foram notificados com sucesso."
-      });
+      toast.success("Todos os voluntários foram notificados com sucesso");
     }, 2000);
   };
 

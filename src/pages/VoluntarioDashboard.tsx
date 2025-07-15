@@ -78,10 +78,7 @@ const VoluntarioDashboard = () => {
   const handleAceitarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
-    toast({
-      title: "Substituição aceita",
-      description: "Você aceitou participar desta escala."
-    });
+    toast.success("Substituição aceita - Você aceitou participar desta escala");
     
     console.log("Substituição aceita:", id);
   };
@@ -89,10 +86,7 @@ const VoluntarioDashboard = () => {
   const handleRecusarSubstituicao = (id: number) => {
     setSubstituicoesPendentes(prev => prev.filter(sub => sub.id !== id));
     
-    toast({
-      title: "Substituição recusada",
-      description: "Você recusou esta solicitação."
-    });
+    toast.error("Substituição recusada");
     
     console.log("Substituição recusada:", id);
   };
@@ -104,23 +98,14 @@ const VoluntarioDashboard = () => {
     );
     
     if (escalaHoje) {
-      toast({
-        title: "Escala de hoje",
-        description: `Você está escalado para: ${escalaHoje.culto}`
-      });
+      toast.success(`Escala de hoje - Você está escalado para: ${escalaHoje.culto}`);
     } else {
-      toast({
-        title: "Sem escala hoje",
-        description: "Você não está escalado para hoje."
-      });
+      toast.info("Sem escala hoje - Você não está escalado para hoje");
     }
   };
 
   const handleConfirmarPresenca = (escalaId: number) => {
-    toast({
-      title: "Presença confirmada",
-      description: "Sua presença foi confirmada com sucesso."
-    });
+    toast.success("Presença confirmada com sucesso");
     
     console.log("Presença confirmada para escala:", escalaId);
   };
