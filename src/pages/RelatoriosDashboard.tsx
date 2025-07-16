@@ -5,8 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, BarChart3, Users, Calendar } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { RelatoriosVoluntarios } from '@/components/RelatoriosVoluntarios';
-import { RelatoriosEscalas } from '@/components/RelatoriosEscalas';
+import RelatoriosVoluntarios from '@/components/RelatoriosVoluntarios';
+import RelatoriosEscalas from '@/components/RelatoriosEscalas';
 
 const RelatoriosDashboard = () => {
   const navigate = useNavigate();

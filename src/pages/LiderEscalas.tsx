@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -49,7 +48,7 @@ const LiderEscalas = () => {
     
     const updatedData = {
       ...editingEscala,
-      status: editingEscala.voluntarios.length === 5 ? "agendada" : "Incompleta"
+      status: editingEscala.voluntarios.length === 5 ? "Ativa" : "Incompleta"
     };
     
     updateEscala(editingEscala.id, updatedData, 'lider');
@@ -118,9 +117,9 @@ const LiderEscalas = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Agendadas</p>
+                  <p className="text-sm font-medium text-gray-600">Ativas</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {minhasEscalas.filter(e => e.status === "agendada").length}
+                    {minhasEscalas.filter(e => e.status === "Ativa").length}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-green-600" />
@@ -182,9 +181,9 @@ const LiderEscalas = () => {
                             {escala.voluntarios.length}/5 voluntários
                           </p>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {escala.voluntarios.slice(0, 2).map((voluntario: any, index: number) => (
+                            {escala.voluntarios.slice(0, 2).map((voluntario, index: number) => (
                               <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                {typeof voluntario === 'string' ? voluntario : voluntario.nome}
+                                {voluntario.nome}
                               </span>
                             ))}
                             {escala.voluntarios.length > 2 && (
@@ -196,7 +195,7 @@ const LiderEscalas = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={escala.status === "agendada" ? "default" : "destructive"}>
+                        <Badge variant={escala.status === "Ativa" ? "default" : "destructive"}>
                           {escala.status}
                         </Badge>
                       </TableCell>
@@ -333,7 +332,7 @@ const LiderEscalas = () => {
                   </div>
                 </div>
 
-                <Badge variant={selectedEscala.status === "agendada" ? "default" : "destructive"}>
+                <Badge variant={selectedEscala.status === "Ativa" ? "default" : "destructive"}>
                   {selectedEscala.status}
                 </Badge>
               </div>

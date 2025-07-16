@@ -18,14 +18,19 @@ export interface Escala {
   voluntarios: Voluntario[];
   status: 'Ativa' | 'Completa' | 'Incompleta';
   local?: string;
+  criadoPor?: string;
+  modificadoPor?: string;
 }
 
 export interface EscalasContextType {
   escalas: Escala[];
   voluntarios: Voluntario[];
   adicionarEscala: (escala: Omit<Escala, 'id' | 'status'>) => void;
+  addEscala: (escala: Omit<Escala, 'id' | 'status'>) => void;
   editarEscala: (id: string, escala: Partial<Escala>) => void;
+  updateEscala: (id: string, escala: Partial<Escala>, userType?: string) => void;
   excluirEscala: (id: string) => void;
+  deleteEscala: (id: string, userType?: string) => void;
   atualizarEscala: (escala: Escala) => void;
   confirmarPresenca: (escalaId: string, voluntarioId: string) => void;
   adicionarVoluntario: (voluntario: Omit<Voluntario, 'id'>) => void;
@@ -56,7 +61,8 @@ export const EscalasProvider: React.FC<{ children: ReactNode }> = ({ children })
         { id: '1', nome: 'Maria Santos', telefone: '5511999999999', tipo: 'voluntario', confirmado: true },
         { id: '2', nome: 'Pedro Lima', telefone: '5511888888888', tipo: 'voluntario', confirmado: false }
       ],
-      status: 'Ativa'
+      status: 'Ativa',
+      criadoPor: 'admin'
     },
     {
       id: '2',
@@ -68,7 +74,8 @@ export const EscalasProvider: React.FC<{ children: ReactNode }> = ({ children })
       voluntarios: [
         { id: '3', nome: 'Carlos Oliveira', telefone: '5511777777777', tipo: 'voluntario', confirmado: true }
       ],
-      status: 'Ativa'
+      status: 'Incompleta',
+      criadoPor: 'admin'
     }
   ]);
 
@@ -84,14 +91,23 @@ export const EscalasProvider: React.FC<{ children: ReactNode }> = ({ children })
     const escala: Escala = {
       ...novaEscala,
       id: Date.now().toString(),
-      status: 'Ativa'
+      status: novaEscala.voluntarios.length >= 5 ? 'Ativa' : 'Incompleta',
+      criadoPor: 'admin'
     };
     setEscalas(prev => [...prev, escala]);
   };
 
+  const addEscala = adicionarEscala;
+
   const editarEscala = (id: string, dadosEscala: Partial<Escala>) => {
     setEscalas(prev => prev.map(escala => 
-      escala.id === id ? { ...escala, ...dadosEscala } : escala
+      escala.id === id ? { ...escala, ...dadosEscala, modificadoPor: 'admin' } : escala
+    ));
+  };
+
+  const updateEscala = (id: string, dadosEscala: Partial<Escala>, userType: string = 'admin') => {
+    setEscalas(prev => prev.map(escala => 
+      escala.id === id ? { ...escala, ...dadosEscala, modificadoPor: userType } : escala
     ));
   };
 
@@ -99,9 +115,13 @@ export const EscalasProvider: React.FC<{ children: ReactNode }> = ({ children })
     setEscalas(prev => prev.filter(escala => escala.id !== id));
   };
 
+  const deleteEscala = (id: string, userType: string = 'admin') => {
+    setEscalas(prev => prev.filter(escala => escala.id !== id));
+  };
+
   const atualizarEscala = (escalaAtualizada: Escala) => {
     setEscalas(prev => prev.map(escala => 
-      escala.id === escalaAtualizada.id ? escalaAtualizada : escala
+      escala.id === escalaAtualizada.id ? { ...escalaAtualizada, modificadoPor: 'admin' } : escala
     ));
   };
 
@@ -141,8 +161,11 @@ export const EscalasProvider: React.FC<{ children: ReactNode }> = ({ children })
     escalas,
     voluntarios,
     adicionarEscala,
+    addEscala,
     editarEscala,
+    updateEscala,
     excluirEscala,
+    deleteEscala,
     atualizarEscala,
     confirmarPresenca,
     adicionarVoluntario,

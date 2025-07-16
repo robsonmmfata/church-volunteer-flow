@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -39,10 +38,12 @@ const Escalas = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "agendada":
+      case "Ativa":
         return "default";
       case "Incompleta":
         return "destructive";
+      case "Completa":
+        return "secondary";
       default:
         return "secondary";
     }
@@ -68,7 +69,7 @@ const Escalas = () => {
     
     const updatedData = {
       ...editingEscala,
-      status: editingEscala.voluntarios.length === 5 ? "agendada" : "Incompleta"
+      status: editingEscala.voluntarios.length === 5 ? "Ativa" : "Incompleta"
     };
     
     updateEscala(editingEscala.id, updatedData, user?.tipo || 'admin');
@@ -155,9 +156,9 @@ const Escalas = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Agendadas</p>
+                  <p className="text-sm font-medium text-gray-600">Ativas</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {escalas.filter(e => e.status === "agendada").length}
+                    {escalas.filter(e => e.status === "Ativa").length}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-green-600" />
@@ -220,9 +221,9 @@ const Escalas = () => {
                       Voluntários ({escala.voluntarios.length}/5):
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {escala.voluntarios.slice(0, 3).map((voluntario: any, index: number) => (
+                      {escala.voluntarios.slice(0, 3).map((voluntario, index: number) => (
                         <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          {typeof voluntario === 'string' ? voluntario : voluntario.nome}
+                          {voluntario.nome}
                         </span>
                       ))}
                       {escala.voluntarios.length > 3 && (
@@ -282,9 +283,9 @@ const Escalas = () => {
                             {escala.voluntarios.length}/5 voluntários
                           </p>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {escala.voluntarios.slice(0, 2).map((voluntario: any, index: number) => (
+                            {escala.voluntarios.slice(0, 2).map((voluntario, index: number) => (
                               <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                {typeof voluntario === 'string' ? voluntario : voluntario.nome}
+                                {voluntario.nome}
                               </span>
                             ))}
                             {escala.voluntarios.length > 2 && (
@@ -296,7 +297,7 @@ const Escalas = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={escala.status === "agendada" ? "default" : "destructive"}>
+                        <Badge variant={getStatusColor(escala.status)}>
                           {escala.status}
                         </Badge>
                       </TableCell>
