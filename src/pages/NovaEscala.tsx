@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -24,10 +23,9 @@ const NovaEscala = () => {
   const [selectedLider, setSelectedLider] = useState("");
   const [selectedVoluntarios, setSelectedVoluntarios] = useState<string[]>([]);
 
-  // Mock data - Em produção, viria de uma API
   const cultos = [
     "Domingo 10h",
-    "Domingo 19h30",
+    "Domingo 19h30", 
     "Quarta 20h (Culto da Fé)",
     "Sexta 20h (Hope)",
     "Vigília 21h (Última sexta do mês)"
@@ -127,17 +125,23 @@ const NovaEscala = () => {
     setLoading(true);
 
     try {
-      // Converter IDs dos voluntários para nomes
-      const voluntariosNomes = selectedVoluntarios.map(id => {
+      // Converter IDs dos voluntários para objetos Voluntario
+      const voluntariosEscalados = selectedVoluntarios.map(id => {
         const voluntario = voluntarios.find(v => v.id === id);
-        return voluntario ? voluntario.nome : '';
-      }).filter(nome => nome !== '');
+        return voluntario ? {
+          id: voluntario.id,
+          nome: voluntario.nome,
+          tipo: 'voluntario' as const
+        } : null;
+      }).filter(v => v !== null);
 
       const escalaData = {
         data: format(date, 'yyyy-MM-dd'),
+        tipo: selectedCulto,
         culto: selectedCulto,
         lider: selectedLider,
-        voluntarios: voluntariosNomes
+        voluntarios: voluntariosEscalados,
+        local: "Templo Principal"
       };
 
       console.log("Salvando escala:", escalaData);

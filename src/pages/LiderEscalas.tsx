@@ -49,7 +49,7 @@ const LiderEscalas = () => {
     
     const updatedData = {
       ...editingEscala,
-      status: editingEscala.voluntarios.length === 5 ? "Completa" : "Incompleta"
+      status: editingEscala.voluntarios.length === 5 ? "agendada" : "Incompleta"
     };
     
     updateEscala(editingEscala.id, updatedData, 'lider');
@@ -66,11 +66,15 @@ const LiderEscalas = () => {
       return;
     }
 
+    const voluntarioNomes = editingEscala.voluntarios.map((v: any) => 
+      typeof v === 'string' ? v : v.nome
+    );
+
     setEditingEscala((prev: any) => ({
       ...prev,
       voluntarios: checked 
-        ? [...prev.voluntarios, voluntario]
-        : prev.voluntarios.filter((v: string) => v !== voluntario)
+        ? [...voluntarioNomes, voluntario]
+        : voluntarioNomes.filter((v: string) => v !== voluntario)
     }));
   };
 
@@ -114,9 +118,9 @@ const LiderEscalas = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Completas</p>
+                  <p className="text-sm font-medium text-gray-600">Agendadas</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {minhasEscalas.filter(e => e.status === "Completa").length}
+                    {minhasEscalas.filter(e => e.status === "agendada").length}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-green-600" />
@@ -178,9 +182,9 @@ const LiderEscalas = () => {
                             {escala.voluntarios.length}/5 voluntários
                           </p>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {escala.voluntarios.slice(0, 2).map((voluntario: string, index: number) => (
+                            {escala.voluntarios.slice(0, 2).map((voluntario: any, index: number) => (
                               <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                {voluntario}
+                                {typeof voluntario === 'string' ? voluntario : voluntario.nome}
                               </span>
                             ))}
                             {escala.voluntarios.length > 2 && (
@@ -192,7 +196,7 @@ const LiderEscalas = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={escala.status === "Completa" ? "default" : "destructive"}>
+                        <Badge variant={escala.status === "agendada" ? "default" : "destructive"}>
                           {escala.status}
                         </Badge>
                       </TableCell>
@@ -268,7 +272,9 @@ const LiderEscalas = () => {
                     {voluntariosDisponiveis.map((voluntario) => (
                       <div key={voluntario} className="flex items-center space-x-2">
                         <Checkbox
-                          checked={editingEscala.voluntarios.includes(voluntario)}
+                          checked={editingEscala.voluntarios.some((v: any) => 
+                            typeof v === 'string' ? v === voluntario : v.nome === voluntario
+                          )}
                           onCheckedChange={(checked) => 
                             handleVoluntarioChange(voluntario, checked as boolean)
                           }
@@ -319,15 +325,15 @@ const LiderEscalas = () => {
                 <div>
                   <h5 className="font-medium mb-2">Voluntários escalados:</h5>
                   <div className="space-y-1">
-                    {selectedEscala.voluntarios.map((voluntario: string, index: number) => (
+                    {selectedEscala.voluntarios.map((voluntario: any, index: number) => (
                       <div key={index} className="text-sm bg-gray-100 px-3 py-2 rounded">
-                        {voluntario}
+                        {typeof voluntario === 'string' ? voluntario : voluntario.nome}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <Badge variant={selectedEscala.status === "Completa" ? "default" : "destructive"}>
+                <Badge variant={selectedEscala.status === "agendada" ? "default" : "destructive"}>
                   {selectedEscala.status}
                 </Badge>
               </div>

@@ -22,26 +22,14 @@ import { toast } from "sonner";
 import { useEscalas } from "@/contexts/EscalasContext";
 import { useAuth } from "@/contexts/AuthContext";
 
-interface Escala {
-  id: number;
-  data: string;
-  culto: string;
-  lider: string;
-  voluntarios: string[];
-  status: string;
-  criadoPor?: string;
-  modificadoPor?: string;
-  ultimaModificacao?: string;
-}
-
 const Escalas = () => {
   const { escalas, deleteEscala, updateEscala } = useEscalas();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [selectedEscala, setSelectedEscala] = useState<Escala | null>(null);
+  const [selectedEscala, setSelectedEscala] = useState<any>(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingEscala, setEditingEscala] = useState<Escala | null>(null);
+  const [editingEscala, setEditingEscala] = useState<any>(null);
 
   // Mock data para voluntários disponíveis
   const voluntariosDisponiveis = [
@@ -51,7 +39,7 @@ const Escalas = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Completa":
+      case "agendada":
         return "default";
       case "Incompleta":
         return "destructive";
@@ -70,7 +58,7 @@ const Escalas = () => {
     });
   };
 
-  const handleEdit = (escala: Escala) => {
+  const handleEdit = (escala: any) => {
     setEditingEscala({ ...escala });
     setIsEditDialogOpen(true);
   };
@@ -80,7 +68,7 @@ const Escalas = () => {
     
     const updatedData = {
       ...editingEscala,
-      status: editingEscala.voluntarios.length === 5 ? "Completa" : "Incompleta"
+      status: editingEscala.voluntarios.length === 5 ? "agendada" : "Incompleta"
     };
     
     updateEscala(editingEscala.id, updatedData, user?.tipo || 'admin');
@@ -97,22 +85,26 @@ const Escalas = () => {
       return;
     }
 
-    setEditingEscala(prev => ({
-      ...prev!,
+    const voluntarioNomes = editingEscala.voluntarios.map((v: any) => 
+      typeof v === 'string' ? v : v.nome
+    );
+
+    setEditingEscala((prev: any) => ({
+      ...prev,
       voluntarios: checked 
-        ? [...prev!.voluntarios, voluntario]
-        : prev!.voluntarios.filter(v => v !== voluntario)
+        ? [...voluntarioNomes, voluntario]
+        : voluntarioNomes.filter((v: string) => v !== voluntario)
     }));
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     if (confirm("Tem certeza que deseja excluir esta escala?")) {
       deleteEscala(id, user?.tipo || 'admin');
       toast.success("Escala excluída com sucesso!");
     }
   };
 
-  const handleViewDetails = (escala: Escala) => {
+  const handleViewDetails = (escala: any) => {
     setSelectedEscala(escala);
     setIsDetailDialogOpen(true);
   };
@@ -163,9 +155,9 @@ const Escalas = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Completas</p>
+                  <p className="text-sm font-medium text-gray-600">Agendadas</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {escalas.filter(e => e.status === "Completa").length}
+                    {escalas.filter(e => e.status === "agendada").length}
                   </p>
                 </div>
                 <Users className="h-8 w-8 text-green-600" />
@@ -228,9 +220,9 @@ const Escalas = () => {
                       Voluntários ({escala.voluntarios.length}/5):
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {escala.voluntarios.slice(0, 3).map((voluntario, index) => (
+                      {escala.voluntarios.slice(0, 3).map((voluntario: any, index: number) => (
                         <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                          {voluntario}
+                          {typeof voluntario === 'string' ? voluntario : voluntario.nome}
                         </span>
                       ))}
                       {escala.voluntarios.length > 3 && (
@@ -290,9 +282,9 @@ const Escalas = () => {
                             {escala.voluntarios.length}/5 voluntários
                           </p>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {escala.voluntarios.slice(0, 2).map((voluntario, index) => (
+                            {escala.voluntarios.slice(0, 2).map((voluntario: any, index: number) => (
                               <span key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">
-                                {voluntario}
+                                {typeof voluntario === 'string' ? voluntario : voluntario.nome}
                               </span>
                             ))}
                             {escala.voluntarios.length > 2 && (
@@ -304,7 +296,7 @@ const Escalas = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={escala.status === "Completa" ? "default" : "destructive"}>
+                        <Badge variant={escala.status === "agendada" ? "default" : "destructive"}>
                           {escala.status}
                         </Badge>
                       </TableCell>
@@ -369,8 +361,8 @@ const Escalas = () => {
                     <Input
                       type="date"
                       value={editingEscala.data}
-                      onChange={(e) => setEditingEscala(prev => ({
-                        ...prev!,
+                      onChange={(e) => setEditingEscala((prev: any) => ({
+                        ...prev,
                         data: e.target.value
                       }))}
                     />
@@ -379,8 +371,8 @@ const Escalas = () => {
                     <Label>Culto</Label>
                     <Input
                       value={editingEscala.culto}
-                      onChange={(e) => setEditingEscala(prev => ({
-                        ...prev!,
+                      onChange={(e) => setEditingEscala((prev: any) => ({
+                        ...prev,
                         culto: e.target.value
                       }))}
                     />
@@ -391,8 +383,8 @@ const Escalas = () => {
                   <Label>Líder</Label>
                   <Input
                     value={editingEscala.lider}
-                    onChange={(e) => setEditingEscala(prev => ({
-                      ...prev!,
+                    onChange={(e) => setEditingEscala((prev: any) => ({
+                      ...prev,
                       lider: e.target.value
                     }))}
                   />
@@ -404,7 +396,9 @@ const Escalas = () => {
                     {voluntariosDisponiveis.map((voluntario) => (
                       <div key={voluntario} className="flex items-center space-x-2">
                         <Checkbox
-                          checked={editingEscala.voluntarios.includes(voluntario)}
+                          checked={editingEscala.voluntarios.some((v: any) => 
+                            typeof v === 'string' ? v === voluntario : v.nome === voluntario
+                          )}
                           onCheckedChange={(checked) => 
                             handleVoluntarioChange(voluntario, checked as boolean)
                           }
@@ -456,9 +450,9 @@ const Escalas = () => {
                 <div>
                   <h5 className="font-medium mb-2">Voluntários escalados:</h5>
                   <div className="space-y-1">
-                    {selectedEscala.voluntarios.map((voluntario, index) => (
+                    {selectedEscala.voluntarios.map((voluntario: any, index: number) => (
                       <div key={index} className="text-sm bg-gray-100 px-3 py-2 rounded">
-                        {voluntario}
+                        {typeof voluntario === 'string' ? voluntario : voluntario.nome}
                       </div>
                     ))}
                   </div>
