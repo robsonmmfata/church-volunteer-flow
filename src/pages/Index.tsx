@@ -14,11 +14,13 @@ import {
 import { toast } from "sonner";
 import { useEscalas } from "@/contexts/EscalasContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from '@/hooks/useNotifications';
 
 const Index = () => {
   const navigate = useNavigate();
   const { escalas } = useEscalas();
   const { logout } = useAuth();
+  const { addNotification } = useNotifications();
   
   const [substituicoesPendentes, setSubstituicoesPendentes] = useState([
     { 

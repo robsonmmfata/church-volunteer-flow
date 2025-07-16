@@ -23,14 +23,25 @@ import LiderDashboard from "./pages/LiderDashboard";
 import PerfilUsuario from "./pages/PerfilUsuario";
 import DisponibilidadeVoluntario from "./pages/DisponibilidadeVoluntario";
 import SolicitarSubstituicao from "./pages/SolicitarSubstituicao";
+import RelatoriosDashboard from "./pages/RelatoriosDashboard";
 import { Navigation } from "./components/Navigation";
+import { NavigationHeader } from "./components/NavigationHeader";
 
 const queryClient = new QueryClient();
 
 // Layout para área administrativa
 const AdminLayout = ({ children }: { children: React.ReactNode }) => (
   <>
+    <NavigationHeader />
     <Navigation />
+    {children}
+  </>
+);
+
+// Layout para outras áreas
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => (
+  <>
+    <NavigationHeader />
     {children}
   </>
 );
@@ -54,7 +65,7 @@ const App = () => (
                 path="/voluntario/dashboard" 
                 element={
                   <ProtectedRoute allowedUserTypes={['voluntario']}>
-                    <VoluntarioDashboard />
+                    <DashboardLayout><VoluntarioDashboard /></DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -62,7 +73,7 @@ const App = () => (
                 path="/voluntario/perfil" 
                 element={
                   <ProtectedRoute allowedUserTypes={['voluntario']}>
-                    <PerfilUsuario />
+                    <DashboardLayout><PerfilUsuario /></DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -70,7 +81,7 @@ const App = () => (
                 path="/voluntario/disponibilidade" 
                 element={
                   <ProtectedRoute allowedUserTypes={['voluntario']}>
-                    <DisponibilidadeVoluntario />
+                    <DashboardLayout><DisponibilidadeVoluntario /></DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -78,7 +89,7 @@ const App = () => (
                 path="/voluntario/solicitar-substituicao" 
                 element={
                   <ProtectedRoute allowedUserTypes={['voluntario']}>
-                    <SolicitarSubstituicao />
+                    <DashboardLayout><SolicitarSubstituicao /></DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -88,7 +99,7 @@ const App = () => (
                 path="/lider/dashboard" 
                 element={
                   <ProtectedRoute allowedUserTypes={['lider']}>
-                    <LiderDashboard />
+                    <DashboardLayout><LiderDashboard /></DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -96,7 +107,7 @@ const App = () => (
                 path="/lider/perfil" 
                 element={
                   <ProtectedRoute allowedUserTypes={['lider']}>
-                    <PerfilUsuario />
+                    <DashboardLayout><PerfilUsuario /></DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -114,7 +125,7 @@ const App = () => (
                 path="/admin/perfil" 
                 element={
                   <ProtectedRoute allowedUserTypes={['administrador']}>
-                    <PerfilUsuario />
+                    <DashboardLayout><PerfilUsuario /></DashboardLayout>
                   </ProtectedRoute>
                 } 
               />
@@ -163,6 +174,14 @@ const App = () => (
                 element={
                   <ProtectedRoute allowedUserTypes={['administrador']}>
                     <AdminLayout><Configuracoes /></AdminLayout>
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/admin/relatorios" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['administrador']}>
+                    <AdminLayout><RelatoriosDashboard /></AdminLayout>
                   </ProtectedRoute>
                 } 
               />
