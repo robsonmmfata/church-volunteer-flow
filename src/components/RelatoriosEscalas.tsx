@@ -12,7 +12,6 @@ import { ptBR } from 'date-fns/locale';
 export const RelatoriosEscalas = () => {
   const { escalas } = useEscalas();
 
-  // Calcular estatísticas das escalas
   const calcularEstatisticas = () => {
     const agora = new Date();
     const escalasPassadas = escalas.filter(e => new Date(e.data) < agora);
@@ -38,7 +37,6 @@ export const RelatoriosEscalas = () => {
 
   const estatisticas = calcularEstatisticas();
 
-  // Dados para gráfico mensal
   const ultimosSeisMeses = eachMonthOfInterval({
     start: subMonths(new Date(), 5),
     end: new Date()
@@ -65,7 +63,6 @@ export const RelatoriosEscalas = () => {
     };
   });
 
-  // Dados por tipo de culto
   const dadosPorTipo = escalas.reduce((acc, escala) => {
     const tipo = escala.tipo;
     if (!acc[tipo]) {
@@ -97,7 +94,6 @@ export const RelatoriosEscalas = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Relatório de Escalas</h2>
@@ -109,7 +105,6 @@ export const RelatoriosEscalas = () => {
         </Button>
       </div>
 
-      {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -166,7 +161,6 @@ export const RelatoriosEscalas = () => {
         </Card>
       </div>
 
-      {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -208,7 +202,6 @@ export const RelatoriosEscalas = () => {
         </Card>
       </div>
 
-      {/* Tabela de Escalas Recentes */}
       <Card>
         <CardHeader>
           <CardTitle>Escalas Recentes</CardTitle>

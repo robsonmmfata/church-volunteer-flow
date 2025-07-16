@@ -8,6 +8,7 @@ import { ptBR } from 'date-fns/locale';
 import { useAuth } from "@/contexts/AuthContext";
 import { useEscalas } from "@/contexts/EscalasContext";
 import { useNotifications } from '@/hooks/useNotifications';
+import { toast } from "sonner";
 
 const VoluntarioDashboard = () => {
   const { user } = useAuth();
@@ -33,7 +34,6 @@ const VoluntarioDashboard = () => {
       await confirmarPresenca(escalaId, user!.id);
       toast.success("Presença confirmada com sucesso!");
       
-      // Adicionar notificação
       addNotification({
         title: "Presença Confirmada",
         message: "Sua presença foi confirmada na escala",
@@ -49,7 +49,6 @@ const VoluntarioDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-4">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <div className="flex items-center space-x-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -61,7 +60,6 @@ const VoluntarioDashboard = () => {
           </div>
         </div>
 
-        {/* Próximas Escalas */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
@@ -126,7 +124,6 @@ const VoluntarioDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Ações Rápidas */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">

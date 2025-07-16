@@ -9,9 +9,7 @@ import { Download, Users, Calendar, TrendingUp, Award } from 'lucide-react';
 
 export const RelatoriosVoluntarios = () => {
   const { escalas, voluntarios } = useEscalas();
-  const [periodo, setPeriodo] = useState<'mes' | 'trimestre' | 'ano'>('mes');
 
-  // Calcular estatísticas dos voluntários
   const calcularEstatisticas = () => {
     const stats = voluntarios.map(voluntario => {
       const escalasDoVoluntario = escalas.filter(escala => 
@@ -45,7 +43,6 @@ export const RelatoriosVoluntarios = () => {
 
   const estatisticas = calcularEstatisticas();
 
-  // Dados para gráficos
   const dadosGrafico = estatisticas.slice(0, 10).map(stat => ({
     nome: stat.nome.split(' ')[0],
     escalas: stat.totalEscalas,
@@ -78,7 +75,6 @@ export const RelatoriosVoluntarios = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Relatório de Voluntários</h2>
@@ -90,7 +86,6 @@ export const RelatoriosVoluntarios = () => {
         </Button>
       </div>
 
-      {/* Cards de Resumo */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -147,7 +142,6 @@ export const RelatoriosVoluntarios = () => {
         </Card>
       </div>
 
-      {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -196,7 +190,6 @@ export const RelatoriosVoluntarios = () => {
         </Card>
       </div>
 
-      {/* Tabela Detalhada */}
       <Card>
         <CardHeader>
           <CardTitle>Detalhamento por Voluntário</CardTitle>
