@@ -1,3 +1,4 @@
+
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -242,7 +243,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <p>&copy; 2024 Voluntários Igreja. Todos os direitos reservados.</p>
+          <p>&copy; 2025 Voluntários Igreja. Todos os direitos reservados.</p>
         </div>
       </footer>
     </div>

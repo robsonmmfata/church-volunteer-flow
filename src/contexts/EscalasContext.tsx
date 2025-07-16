@@ -1,38 +1,36 @@
 
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { toast } from "sonner";
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-interface Voluntario {
+export interface Voluntario {
   id: string;
   nome: string;
   telefone?: string;
+  tipo: 'voluntario' | 'lider';
   confirmado?: boolean;
-  tipo: 'lider' | 'voluntario';
 }
 
-interface Escala {
+export interface Escala {
   id: string;
   data: string;
-  tipo: string;
   culto: string;
+  tipo: string;
   lider: string;
   voluntarios: Voluntario[];
-  status: string;
+  status: 'Ativa' | 'Completa' | 'Incompleta';
   local?: string;
-  criadoPor?: string;
-  modificadoPor?: string;
-  ultimaModificacao?: string;
 }
 
-interface EscalasContextType {
+export interface EscalasContextType {
   escalas: Escala[];
   voluntarios: Voluntario[];
-  addEscala: (escala: Omit<Escala, 'id' | 'status'>, criadoPor?: string) => void;
-  updateEscala: (id: string, escala: Partial<Escala>, modificadoPor?: string) => void;
-  atualizarEscala: (escala: Escala) => Promise<void>;
-  deleteEscala: (id: string, deletadoPor?: string) => void;
-  confirmarPresenca: (escalaId: string, voluntarioId: string) => Promise<void>;
-  notificarAlteracao: (tipo: string, detalhes: string, targetUsers?: string[]) => void;
+  adicionarEscala: (escala: Omit<Escala, 'id' | 'status'>) => void;
+  editarEscala: (id: string, escala: Partial<Escala>) => void;
+  excluirEscala: (id: string) => void;
+  atualizarEscala: (escala: Escala) => void;
+  confirmarPresenca: (escalaId: string, voluntarioId: string) => void;
+  adicionarVoluntario: (voluntario: Omit<Voluntario, 'id'>) => void;
+  editarVoluntario: (id: string, voluntario: Partial<Voluntario>) => void;
+  excluirVoluntario: (id: string) => void;
 }
 
 const EscalasContext = createContext<EscalasContextType | undefined>(undefined);
@@ -40,152 +38,120 @@ const EscalasContext = createContext<EscalasContextType | undefined>(undefined);
 export const useEscalas = () => {
   const context = useContext(EscalasContext);
   if (!context) {
-    throw new Error('useEscalas must be used within an EscalasProvider');
+    throw new Error('useEscalas deve ser usado dentro de um EscalasProvider');
   }
   return context;
 };
 
-export const EscalasProvider = ({ children }: { children: ReactNode }) => {
-  const [voluntarios] = useState<Voluntario[]>([
-    { id: '1', nome: 'João Silva', telefone: '5511999999999', tipo: 'lider' },
-    { id: '2', nome: 'Ana Santos', telefone: '5511888888888', tipo: 'lider' },
-    { id: '3', nome: 'Carlos Oliveira', telefone: '5511777777777', tipo: 'voluntario' },
-    { id: '4', nome: 'Maria Silva', telefone: '5511666666666', tipo: 'voluntario' },
-    { id: '5', nome: 'Pedro Costa', telefone: '5511555555555', tipo: 'voluntario' },
-    { id: '6', nome: 'Lucia Oliveira', telefone: '5511444444444', tipo: 'voluntario' },
-  ]);
-
+export const EscalasProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [escalas, setEscalas] = useState<Escala[]>([
     {
       id: '1',
-      data: "2024-01-07",
-      tipo: "Domingo Manhã",
-      culto: "Domingo 10h",
-      lider: "João Silva",
+      data: '2025-01-26',
+      culto: 'Domingo 10h',
+      tipo: 'Culto Dominical',
+      lider: 'João Silva',
+      local: 'Templo Principal',
       voluntarios: [
-        { id: '2', nome: 'Ana Santos', telefone: '5511888888888', tipo: 'voluntario', confirmado: true },
-        { id: '3', nome: 'Carlos Oliveira', telefone: '5511777777777', tipo: 'voluntario', confirmado: false },
-        { id: '4', nome: 'Maria Silva', telefone: '5511666666666', tipo: 'voluntario', confirmado: true },
+        { id: '1', nome: 'Maria Santos', telefone: '5511999999999', tipo: 'voluntario', confirmado: true },
+        { id: '2', nome: 'Pedro Lima', telefone: '5511888888888', tipo: 'voluntario', confirmado: false }
       ],
-      status: "agendada",
-      local: "Templo Principal",
-      criadoPor: "admin",
-      ultimaModificacao: new Date().toISOString()
+      status: 'Ativa'
     },
     {
       id: '2',
-      data: "2024-01-07",
-      tipo: "Domingo Noite",
-      culto: "Domingo 19h30",
-      lider: "Ana Santos",
+      data: '2025-01-29',
+      culto: 'Quarta 20h',
+      tipo: 'Culto de Oração',
+      lider: 'Ana Costa',
+      local: 'Salão de Eventos',
       voluntarios: [
-        { id: '1', nome: 'João Silva', telefone: '5511999999999', tipo: 'voluntario', confirmado: true },
-        { id: '3', nome: 'Carlos Oliveira', telefone: '5511777777777', tipo: 'voluntario', confirmado: false },
-        { id: '5', nome: 'Pedro Costa', telefone: '5511555555555', tipo: 'voluntario', confirmado: true },
+        { id: '3', nome: 'Carlos Oliveira', telefone: '5511777777777', tipo: 'voluntario', confirmado: true }
       ],
-      status: "agendada",
-      local: "Templo Principal",
-      criadoPor: "admin",
-      ultimaModificacao: new Date().toISOString()
+      status: 'Ativa'
     }
   ]);
 
-  const notificarAlteracao = (tipo: string, detalhes: string, targetUsers?: string[]) => {
-    setTimeout(() => {
-      toast.success(`${tipo}: ${detalhes}`, {
-        duration: 5000,
-      });
-      console.log(`Notificação enviada para: ${targetUsers?.join(', ') || 'todos'}`);
-    }, 1000);
-  };
+  const [voluntarios, setVoluntarios] = useState<Voluntario[]>([
+    { id: '1', nome: 'Maria Santos', telefone: '5511999999999', tipo: 'voluntario' },
+    { id: '2', nome: 'Pedro Lima', telefone: '5511888888888', tipo: 'voluntario' },
+    { id: '3', nome: 'Carlos Oliveira', telefone: '5511777777777', tipo: 'voluntario' },
+    { id: '4', nome: 'João Silva', telefone: '5511666666666', tipo: 'lider' },
+    { id: '5', nome: 'Ana Costa', telefone: '5511555555555', tipo: 'lider' }
+  ]);
 
-  const addEscala = (escalaData: Omit<Escala, 'id' | 'status'>, criadoPor = 'admin') => {
-    const newEscala: Escala = {
-      ...escalaData,
+  const adicionarEscala = (novaEscala: Omit<Escala, 'id' | 'status'>) => {
+    const escala: Escala = {
+      ...novaEscala,
       id: Date.now().toString(),
-      status: "agendada",
-      criadoPor,
-      ultimaModificacao: new Date().toISOString()
+      status: 'Ativa'
     };
-    
-    setEscalas(prev => [...prev, newEscala]);
-    
-    if (criadoPor === 'admin') {
-      notificarAlteracao(
-        "Nova Escala Criada", 
-        `Escala para ${newEscala.tipo} em ${new Date(newEscala.data).toLocaleDateString('pt-BR')}`,
-        ['lideres', 'voluntarios']
-      );
-    }
+    setEscalas(prev => [...prev, escala]);
   };
 
-  const updateEscala = (id: string, escalaData: Partial<Escala>, modificadoPor = 'admin') => {
-    const escalaAnterior = escalas.find(e => e.id === id);
-    
+  const editarEscala = (id: string, dadosEscala: Partial<Escala>) => {
     setEscalas(prev => prev.map(escala => 
-      escala.id === id ? { 
-        ...escala, 
-        ...escalaData,
-        modificadoPor,
-        ultimaModificacao: new Date().toISOString()
-      } : escala
+      escala.id === id ? { ...escala, ...dadosEscala } : escala
     ));
-
-    if (escalaAnterior) {
-      notificarAlteracao(
-        "Escala Atualizada", 
-        `Escala ${escalaAnterior.tipo} foi modificada`,
-        ['lideres', 'voluntarios']
-      );
-    }
   };
 
-  const atualizarEscala = async (escala: Escala) => {
-    setEscalas(prev => prev.map(e => e.id === escala.id ? escala : e));
-    notificarAlteracao(
-      "Escala Atualizada", 
-      `Escala ${escala.tipo} foi modificada`,
-      ['voluntarios']
-    );
+  const excluirEscala = (id: string) => {
+    setEscalas(prev => prev.filter(escala => escala.id !== id));
   };
 
-  const confirmarPresenca = async (escalaId: string, voluntarioId: string) => {
+  const atualizarEscala = (escalaAtualizada: Escala) => {
+    setEscalas(prev => prev.map(escala => 
+      escala.id === escalaAtualizada.id ? escalaAtualizada : escala
+    ));
+  };
+
+  const confirmarPresenca = (escalaId: string, voluntarioId: string) => {
     setEscalas(prev => prev.map(escala => {
       if (escala.id === escalaId) {
-        const voluntariosAtualizados = escala.voluntarios.map(v =>
-          v.id === voluntarioId ? { ...v, confirmado: true } : v
-        );
-        return { ...escala, voluntarios: voluntariosAtualizados };
+        return {
+          ...escala,
+          voluntarios: escala.voluntarios.map(vol => 
+            vol.id === voluntarioId ? { ...vol, confirmado: true } : vol
+          )
+        };
       }
       return escala;
     }));
   };
 
-  const deleteEscala = (id: string, deletadoPor = 'admin') => {
-    const escalaParaDeletar = escalas.find(e => e.id === id);
-    
-    setEscalas(prev => prev.filter(escala => escala.id !== id));
-    
-    if (escalaParaDeletar) {
-      notificarAlteracao(
-        "Escala Removida", 
-        `Escala ${escalaParaDeletar.tipo} foi removida`,
-        ['lideres', 'voluntarios']
-      );
-    }
+  const adicionarVoluntario = (novoVoluntario: Omit<Voluntario, 'id'>) => {
+    const voluntario: Voluntario = {
+      ...novoVoluntario,
+      id: Date.now().toString()
+    };
+    setVoluntarios(prev => [...prev, voluntario]);
+  };
+
+  const editarVoluntario = (id: string, dadosVoluntario: Partial<Voluntario>) => {
+    setVoluntarios(prev => prev.map(vol => 
+      vol.id === id ? { ...vol, ...dadosVoluntario } : vol
+    ));
+  };
+
+  const excluirVoluntario = (id: string) => {
+    setVoluntarios(prev => prev.filter(vol => vol.id !== id));
+  };
+
+  const value: EscalasContextType = {
+    escalas,
+    voluntarios,
+    adicionarEscala,
+    editarEscala,
+    excluirEscala,
+    atualizarEscala,
+    confirmarPresenca,
+    adicionarVoluntario,
+    editarVoluntario,
+    excluirVoluntario
   };
 
   return (
-    <EscalasContext.Provider value={{ 
-      escalas,
-      voluntarios,
-      addEscala, 
-      updateEscala,
-      atualizarEscala,
-      deleteEscala,
-      confirmarPresenca,
-      notificarAlteracao 
-    }}>
+    <EscalasContext.Provider value={value}>
       {children}
     </EscalasContext.Provider>
   );
