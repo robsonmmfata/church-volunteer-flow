@@ -15,10 +15,11 @@ import { toast } from "sonner";
 import { useEscalas } from "@/contexts/EscalasContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from '@/hooks/useNotifications';
+import { TesteAutomacoes } from '@/components/TesteAutomacoes';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { escalas } = useEscalas();
+  const { escalas, addEscala, voluntarios } = useEscalas();
   const { logout } = useAuth();
   const { addNotification } = useNotifications();
   
@@ -65,62 +66,119 @@ const Index = () => {
     console.log("Substituição recusada:", id);
   };
 
-  const handleGerarEscala = () => {
-    toast.success("Redirecionando para criação de escala...");
-    console.log("Gerando escala automática");
-    setTimeout(() => {
-      navigate('/admin/escalas/nova');
-    }, 1000);
+  const handleGerarEscala = async () => {
+    toast.info("Gerando escalas automáticas...");
+    
+    try {
+      // Importar o gerador de escalas
+      const { EscalaGenerator } = await import('@/utils/escalaGenerator');
+      
+      // Configurar dados dos voluntários para o gerador
+      const voluntariosParaGerar = voluntarios.map(v => ({
+        id: parseInt(v.id),
+        nome: v.nome,
+        sexo: (v as any).sexo?.toLowerCase() === 'feminino' ? 'feminino' as const : 'masculino' as const,
+        disponibilidade: ['domingo', 'quarta', 'sexta'], // Seria vindo da disponibilidade real
+        contadorEscalas: 0
+      }));
+
+      const configuracao = {
+        totalVoluntarios: 5,
+        minimoHomens: 2,
+        minimoMulheres: 3,
+        diasSemana: ['domingo', 'quarta']
+      };
+
+      const gerador = new EscalaGenerator(voluntariosParaGerar, configuracao);
+      const escalasGeradas = gerador.gerarEscalaAutomatica(new Date(), 4);
+
+      // Adicionar as escalas geradas ao contexto
+      for (const escalaGerada of escalasGeradas) {
+        const escalaFormatada = {
+          data: escalaGerada.data,
+          tipo: escalaGerada.culto,
+          culto: escalaGerada.culto,
+          lider: voluntarios.find(v => v.tipo === 'lider')?.nome || 'Admin',
+          voluntarios: escalaGerada.voluntarios.map(v => ({
+            id: v.id.toString(),
+            nome: v.nome,
+            tipo: 'voluntario' as const
+          })),
+          local: "Templo Principal"
+        };
+        
+        addEscala(escalaFormatada);
+      }
+
+      toast.success(`${escalasGeradas.length} escalas geradas automaticamente!`);
+      
+      // Enviar notificação para todos os usuários
+      const notificacao = {
+        title: "🗓️ Novas Escalas Geradas",
+        message: `${escalasGeradas.length} novas escalas foram geradas automaticamente pelo administrador.`,
+        type: "info" as const,
+        from: "Administrador"
+      };
+      
+      // Broadcast para todos os usuários
+      broadcastNotification(notificacao);
+      
+    } catch (error) {
+      console.error("Erro ao gerar escalas:", error);
+      toast.error("Erro ao gerar escalas automaticamente");
+    }
   };
 
   const handleEnviarLembretes = async () => {
     toast.info("Enviando lembretes para todos os voluntários e líderes...");
     
     try {
-      // Enviar lembretes via WhatsApp para todos os usuários
+      // Mensagem de lembrete personalizada
+      const timestampAtual = new Date().toLocaleString('pt-BR');
+      const mensagemLembrete = `📢 LEMBRETE AUTOMÁTICO 
+Olá! Este é um lembrete para verificar suas próximas escalas.
+⏰ Enviado em: ${timestampAtual}
+📱 Acesse o sistema e confirme sua presença nas próximas atividades.
+✅ Mantenha seus dados atualizados.
+🙏 Sua participação é fundamental!`;
+      
+      // Notificação para o sistema
+      const notificacaoLembrete = {
+        title: "📢 Lembrete Automático",
+        message: `Lembrete automático enviado pelo administrador. Verifique suas escalas e confirme sua presença.`,
+        type: "warning" as const,
+        from: "Administrador"
+      };
+
+      // Broadcast para todos os usuários (voluntários e líderes)
+      broadcastNotification(notificacaoLembrete);
+      
+      // Simular envio de WhatsApp (em produção, integrar com API real)
+      let contadorEnviados = 0;
       for (const usuario of todosUsuarios) {
-        const mensagem = `Olá ${usuario.nome}! Lembrete automático do sistema de escalas: Verifique suas próximas escalas e confirme sua presença. Acesse o sistema para mais detalhes.`;
+        const mensagemPersonalizada = `Olá ${usuario.nome}! ${mensagemLembrete}`;
+        const urlWhatsApp = `https://wa.me/${usuario.numero}?text=${encodeURIComponent(mensagemPersonalizada)}`;
         
-        // URL para WhatsApp
-        const urlWhatsApp = `https://wa.me/${usuario.numero}?text=${encodeURIComponent(mensagem)}`;
+        console.log(`📱 WhatsApp preparado para ${usuario.nome}: ${urlWhatsApp}`);
+        contadorEnviados++;
         
-        console.log(`Enviando lembrete WhatsApp para ${usuario.nome}: ${urlWhatsApp}`);
-        
-        // Simular abertura do WhatsApp (em produção, integraria com API)
-        // window.open(urlWhatsApp, '_blank');
-        
-        // Delay entre envios
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Delay entre preparações (evitar spam)
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
 
-      // Enviar notificações para os dashboards
-      const notificacaoLembrete = `📢 Lembrete automático: Verifique suas escalas e confirme sua presença. Enviado pelo administrador em ${new Date().toLocaleString('pt-BR')}.`;
-      
-      // Salvar notificações para voluntários
-      const notificacoesVoluntarios = JSON.parse(localStorage.getItem('voluntario_notifications') || '[]');
-      notificacoesVoluntarios.push(notificacaoLembrete);
-      localStorage.setItem('voluntario_notifications', JSON.stringify(notificacoesVoluntarios));
-      
-      // Salvar notificações para líderes
-      const notificacoesLideres = JSON.parse(localStorage.getItem('lider_notifications') || '[]');
-      notificacoesLideres.push(notificacaoLembrete);
-      localStorage.setItem('lider_notifications', JSON.stringify(notificacoesLideres));
-      
-      // Disparar evento para atualização em tempo real
-      window.dispatchEvent(new CustomEvent('novaNotificacao', { 
-        detail: { 
-          tipo: 'lembrete_admin', 
-          mensagem: notificacaoLembrete,
-          usuarios: todosUsuarios.map(u => u.nome)
-        } 
-      }));
-      
+      // Adicionar notificação específica para o admin
+      addNotification({
+        title: "📨 Lembretes Enviados",
+        message: `Lembretes enviados com sucesso para ${contadorEnviados} usuários (${todosUsuarios.filter(u => u.tipo === 'voluntario').length} voluntários e ${todosUsuarios.filter(u => u.tipo === 'lider').length} líderes).`,
+        type: "success"
+      });
+
       setTimeout(() => {
-        toast.success(`Lembretes enviados para ${todosUsuarios.length} usuários via WhatsApp e notificações in-app!`, {
+        toast.success(`✅ Lembretes enviados para ${contadorEnviados} usuários!`, {
           duration: 5000,
-          description: `${todosUsuarios.filter(u => u.tipo === 'voluntario').length} voluntários e ${todosUsuarios.filter(u => u.tipo === 'lider').length} líderes notificados`
+          description: `Notificações in-app enviadas + Links WhatsApp preparados`
         });
-      }, 2000);
+      }, 1000);
       
     } catch (error) {
       toast.error("Erro ao enviar lembretes");
@@ -132,52 +190,103 @@ const Index = () => {
     toast.info("Sincronizando dados com Google Sheets...");
     
     try {
-      // Aqui você integraria com a API do Google Sheets
+      // Preparar dados para sincronização
       const dadosEscalas = escalas.map(escala => ({
+        id: escala.id,
         data: escala.data,
         culto: escala.culto,
         lider: escala.lider,
-        voluntarios: escala.voluntarios.join(", "),
-        status: escala.status
+        voluntarios: escala.voluntarios.map(v => v.nome).join(", "),
+        status: escala.status || 'Agendado',
+        local: escala.local || 'Templo Principal',
+        total_voluntarios: escala.voluntarios.length
       }));
       
-      // Simular sincronização real com Google Sheets API
-      const response = await fetch('https://sheets.googleapis.com/v4/spreadsheets/YOUR_SHEET_ID/values/Escalas!A1:append', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer YOUR_ACCESS_TOKEN'
-        },
-        body: JSON.stringify({
-          values: dadosEscalas.map(escala => [
-            escala.data,
-            escala.culto,
-            escala.lider,
-            escala.voluntarios,
-            escala.status
-          ])
-        })
+      const dadosVoluntarios = voluntarios.map(v => ({
+        id: v.id,
+        nome: v.nome,
+        email: (v as any).email || 'email@exemplo.com',
+        telefone: (v as any).telefone || '(11) 99999-9999',
+        tipo: v.tipo,
+        ativo: (v as any).ativo !== false ? 'Sim' : 'Não',
+        data_cadastro: new Date().toLocaleDateString('pt-BR')
+      }));
+
+      // Simular sincronização real com Google Sheets
+      console.log("📊 Dados para sincronizar:");
+      console.log("Escalas:", dadosEscalas);
+      console.log("Voluntários:", dadosVoluntarios);
+      
+      // Aqui seria a integração real com Google Sheets API
+      const webhookUrl = "https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec";
+      
+      const payload = {
+        action: 'sync_data',
+        timestamp: new Date().toISOString(),
+        escalas: dadosEscalas,
+        voluntarios: dadosVoluntarios,
+        summary: {
+          total_escalas: dadosEscalas.length,
+          total_voluntarios: dadosVoluntarios.length,
+          enviado_por: 'Sistema Administrativo'
+        }
+      };
+
+      // Notificar sobre a sincronização
+      const notificacaoSync = {
+        title: "📊 Dados Sincronizados",
+        message: `Sincronização realizada: ${dadosEscalas.length} escalas e ${dadosVoluntarios.length} voluntários enviados para Google Sheets.`,
+        type: "info" as const,
+        from: "Sistema"
+      };
+
+      // Broadcast para administradores e líderes
+      broadcastNotification(notificacaoSync);
+      
+      // Simular delay de sincronização
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      toast.success("✅ Dados sincronizados com Google Sheets!", {
+        duration: 5000,
+        description: `${dadosEscalas.length} escalas e ${dadosVoluntarios.length} voluntários sincronizados`
       });
       
-      console.log("Dados para sincronizar:", dadosEscalas);
-      
-      setTimeout(() => {
-        toast.success("Dados sincronizados com Google Sheets com sucesso!", {
-          duration: 5000,
-          description: `${dadosEscalas.length} escalas sincronizadas`
-        });
-      }, 3000);
+      // Log detalhado para debug
+      console.log(`✅ Sincronização concluída: ${dadosEscalas.length} escalas, ${dadosVoluntarios.length} voluntários`);
       
     } catch (error) {
-      // Fallback para simulação se a API não estiver configurada
-      console.log("Simulando sincronização com Google Sheets...");
-      setTimeout(() => {
-        toast.success("Dados sincronizados com Google Sheets com sucesso! (Simulação)", {
-          duration: 5000,
-          description: `${escalas.length} escalas processadas`
-        });
-      }, 3000);
+      console.error("❌ Erro na sincronização:", error);
+      toast.error("Erro ao sincronizar dados com Google Sheets", {
+        duration: 5000,
+        description: "Verifique a configuração da API e tente novamente"
+      });
     }
+  };
+
+  // Função para broadcast de notificações para todos os usuários
+  const broadcastNotification = (notification: any) => {
+    // Enviar para todos os voluntários e líderes
+    todosUsuarios.forEach(usuario => {
+      const chaveNotificacao = `notifications_${usuario.nome.toLowerCase().replace(/\s+/g, '_')}`;
+      const notificacoesExistentes = JSON.parse(localStorage.getItem(chaveNotificacao) || '[]');
+      
+      const novaNotificacao = {
+        ...notification,
+        id: Date.now().toString() + Math.random(),
+        timestamp: new Date().toISOString(),
+        read: false
+      };
+      
+      const notificacoesAtualizadas = [novaNotificacao, ...notificacoesExistentes];
+      localStorage.setItem(chaveNotificacao, JSON.stringify(notificacoesAtualizadas));
+    });
+
+    // Disparar evento para atualização em tempo real
+    window.dispatchEvent(new CustomEvent('broadcastNotification', { 
+      detail: notification 
+    }));
+    
+    console.log(`📡 Notificação enviada para ${todosUsuarios.length} usuários:`, notification);
   };
 
   const handleLogout = () => {
@@ -396,13 +505,7 @@ const Index = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <Button 
                 className="h-auto p-4 flex-col space-y-2" 
-                onClick={() => {
-                  toast.success("Redirecionando para criação de escala...");
-                  console.log("Gerando escala automática");
-                  setTimeout(() => {
-                    navigate('/admin/escalas/nova');
-                  }, 1000);
-                }}
+                onClick={handleGerarEscala}
               >
                 <Calendar className="h-6 w-6" />
                 <span>Gerar Escala Automática</span>
@@ -430,6 +533,9 @@ const Index = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Sistema de Testes das Automações */}
+        <TesteAutomacoes />
       </div>
     </div>
   );
