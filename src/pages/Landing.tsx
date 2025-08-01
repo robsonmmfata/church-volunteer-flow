@@ -17,18 +17,14 @@ const Landing = () => {
             <span className="text-xl font-bold text-gray-900">Sistema de Voluntários</span>
           </div>
           <div className="flex space-x-2">
-            <Link to="/login">
-              <Button variant="outline">
-                <LogIn className="h-4 w-4 mr-2" />
-                Entrar
-              </Button>
-            </Link>
-            <Link to="/voluntario/cadastro">
-              <Button>
-                <UserPlus className="h-4 w-4 mr-2" />
-                Quero me Voluntariar
-              </Button>
-            </Link>
+            <Button variant="outline" onClick={() => window.location.href = '/login'}>
+              <LogIn className="h-4 w-4 mr-2" />
+              Entrar
+            </Button>
+            <Button onClick={() => window.location.href = '/voluntario/cadastro'}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Quero me Voluntariar
+            </Button>
           </div>
         </div>
       </header>
@@ -46,19 +42,15 @@ const Landing = () => {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link to="/voluntario/cadastro">
-            <Button size="lg" className="text-lg px-8 py-3">
-              <Heart className="h-5 w-5 mr-2" />
-              Quero me Voluntariar
-            </Button>
-          </Link>
+          <Button size="lg" className="text-lg px-8 py-3" onClick={() => window.location.href = '/voluntario/cadastro'}>
+            <Heart className="h-5 w-5 mr-2" />
+            Quero me Voluntariar
+          </Button>
           
-          <Link to="/login">
-            <Button size="lg" variant="outline" className="text-lg px-8 py-3">
-              <LogIn className="h-5 w-5 mr-2" />
-              Já tenho Cadastro
-            </Button>
-          </Link>
+          <Button size="lg" variant="outline" className="text-lg px-8 py-3" onClick={() => window.location.href = '/login'}>
+            <LogIn className="h-5 w-5 mr-2" />
+            Já tenho Cadastro
+          </Button>
         </div>
       </div>
 
@@ -127,11 +119,9 @@ const Landing = () => {
               <p className="text-gray-600 mb-4">
                 Consulte suas escalas, informe disponibilidade e gerencie substituições.
               </p>
-              <Link to="/login">
-                <Button variant="outline" className="w-full">
-                  Acesso Voluntário
-                </Button>
-              </Link>
+              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/login'}>
+                Acesso Voluntário
+              </Button>
             </CardContent>
           </Card>
 
@@ -146,11 +136,9 @@ const Landing = () => {
               <p className="text-gray-600 mb-4">
                 Gerencie sua equipe, aprove substituições e organize escalas.
               </p>
-              <Link to="/login">
-                <Button variant="outline" className="w-full">
-                  Acesso Líder
-                </Button>
-              </Link>
+              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/login'}>
+                Acesso Líder
+              </Button>
             </CardContent>
           </Card>
 
@@ -165,11 +153,9 @@ const Landing = () => {
               <p className="text-gray-600 mb-4">
                 Controle total do sistema, cadastre voluntários e configure regras.
               </p>
-              <Link to="/login">
-                <Button variant="outline" className="w-full">
-                  Acesso Admin
-                </Button>
-              </Link>
+              <Button variant="outline" className="w-full" onClick={() => window.location.href = '/login'}>
+                Acesso Admin
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -231,12 +217,10 @@ const Landing = () => {
           <p className="text-xl mb-8 opacity-90">
             Junte-se a nós e faça parte desta família de voluntários
           </p>
-          <Link to="/voluntario/cadastro">
-            <Button size="lg" variant="secondary" className="text-lg px-8 py-4">
-              Cadastrar-se Agora
-              <CheckCircle className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
+          <Button size="lg" variant="secondary" className="text-lg px-8 py-4" onClick={() => window.location.href = '/voluntario/cadastro'}>
+            Cadastrar-se Agora
+            <CheckCircle className="ml-2 h-5 w-5" />
+          </Button>
         </div>
       </section>
 

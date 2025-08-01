@@ -400,7 +400,7 @@ const Index = () => {
                   toast.success("Redirecionando para criação de escala...");
                   console.log("Gerando escala automática");
                   setTimeout(() => {
-                    navigate('/admin');
+                    navigate('/admin/escalas/nova');
                   }, 1000);
                 }}
               >
