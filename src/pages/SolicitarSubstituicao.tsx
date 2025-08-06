@@ -77,8 +77,15 @@ const SolicitarSubstituicao = () => {
       toast.success("Solicitação enviada com sucesso!");
       toast.info("Você receberá uma notificação quando alguém aceitar sua solicitação");
       
-      // Opcional: Enviar notificação via webhook
-      // sendNotificationToLeaders(escala, motivo, substitutoSugerido);
+      // Notificação em tempo real para líderes
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "🔄 Nova Solicitação",
+          message: `Solicitação de substituição para ${escala?.culto} foi enviada.`,
+          type: "info",
+          from: "Sistema"
+        }
+      }));
       
       setIsLoading(false);
       navigate(-1);

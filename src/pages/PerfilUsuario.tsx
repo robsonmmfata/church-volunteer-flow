@@ -38,6 +38,17 @@ const PerfilUsuario = () => {
     // Simular salvamento
     setTimeout(() => {
       toast.success("Perfil atualizado com sucesso!");
+      
+      // Notificação em tempo real
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "👤 Perfil Atualizado",
+          message: "Perfil de usuário foi atualizado.",
+          type: "success",
+          from: "Sistema"
+        }
+      }));
+      
       setIsLoading(false);
     }, 1000);
   };

@@ -35,20 +35,24 @@ const VoluntarioCadastro = () => {
 
     try {
       // Simulação de envio para webhook N8N
-      const response = await fetch('/webhook/voluntario-cadastro', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        toast.success("Cadastro realizado com sucesso! Em breve entraremos em contato.");
-        navigate("/voluntario/dashboard");
-      } else {
-        throw new Error('Erro ao realizar cadastro');
-      }
+      console.log("Enviando cadastro:", formData);
+      
+      // Simular delay de API
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      toast.success("Cadastro realizado com sucesso! Em breve entraremos em contato.");
+      
+      // Notificação em tempo real
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "🆕 Novo Cadastro",
+          message: `${formData.nome} se cadastrou como voluntário.`,
+          type: "info",
+          from: "Sistema"
+        }
+      }));
+      
+      navigate("/login");
     } catch (error) {
       toast.error("Erro ao realizar cadastro. Tente novamente.");
     } finally {

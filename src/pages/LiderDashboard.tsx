@@ -62,6 +62,16 @@ const LiderDashboard = () => {
         await atualizarEscala(escalaAtualizada);
   
         toast.success("Voluntário confirmado com sucesso!");
+        
+        // Notificação em tempo real
+        window.dispatchEvent(new CustomEvent('broadcastNotification', {
+          detail: {
+            title: "✅ Voluntário Confirmado",
+            message: `${voluntario.nome} foi confirmado na escala.`,
+            type: "success",
+            from: "Sistema"
+          }
+        }));
       } else {
         toast.error("Escala ou voluntário não encontrado.");
       }

@@ -75,10 +75,18 @@ const DisponibilidadeVoluntario = () => {
     // Simular salvamento
     setTimeout(() => {
       toast.success("Disponibilidade atualizada com sucesso!");
-      setIsLoading(false);
       
-      // Opcional: voltar para o dashboard
-      // navigate(-1);
+      // Notificação em tempo real
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "📅 Disponibilidade Atualizada",
+          message: "Um voluntário atualizou sua disponibilidade.",
+          type: "info",
+          from: "Sistema"
+        }
+      }));
+      
+      setIsLoading(false);
     }, 1000);
   };
 

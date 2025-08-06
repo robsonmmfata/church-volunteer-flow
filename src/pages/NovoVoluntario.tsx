@@ -42,6 +42,17 @@ const NovoVoluntario = () => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast.success("Voluntário cadastrado com sucesso!");
+      
+      // Notificação em tempo real para todos os usuários
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "👥 Novo Voluntário",
+          message: `${formData.nome} foi cadastrado no sistema.`,
+          type: "success",
+          from: "Sistema"
+        }
+      }));
+      
       navigate("/admin/voluntarios");
     } catch (error) {
       console.error("Erro ao cadastrar voluntário:", error);
