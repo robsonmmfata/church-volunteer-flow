@@ -76,6 +76,16 @@ const Escalas = () => {
     setIsEditDialogOpen(false);
     setEditingEscala(null);
     toast.success("Escala editada com sucesso!");
+    
+    // Notificação em tempo real
+    window.dispatchEvent(new CustomEvent('broadcastNotification', {
+      detail: {
+        title: "✏️ Escala Atualizada",
+        message: `Escala do dia ${editingEscala.data} foi atualizada.`,
+        type: "info",
+        from: "Sistema"
+      }
+    }));
   };
 
   const handleVoluntarioChange = (voluntario: string, checked: boolean) => {
@@ -100,8 +110,18 @@ const Escalas = () => {
 
   const handleDelete = (id: string) => {
     if (confirm("Tem certeza que deseja excluir esta escala?")) {
-      deleteEscala(id, user?.tipo || 'admin');
-      toast.success("Escala excluída com sucesso!");
+    deleteEscala(id, user?.tipo || 'admin');
+    toast.success("Escala excluída com sucesso!");
+    
+    // Notificação em tempo real
+    window.dispatchEvent(new CustomEvent('broadcastNotification', {
+      detail: {
+        title: "🗑️ Escala Removida",
+        message: "Uma escala foi removida do sistema.",
+        type: "warning",
+        from: "Sistema"
+      }
+    }));
     }
   };
 

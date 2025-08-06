@@ -39,6 +39,16 @@ const VoluntarioDashboard = () => {
         message: "Sua presença foi confirmada na escala",
         type: "success"
       });
+      
+      // Broadcast para todos os usuários
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "✅ Presença Confirmada",
+          message: `${user?.nome} confirmou presença na escala.`,
+          type: "success",
+          from: "Sistema"
+        }
+      }));
     } catch (error) {
       toast.error("Erro ao confirmar presença");
     } finally {

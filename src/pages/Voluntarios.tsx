@@ -90,12 +90,33 @@ const Voluntarios = () => {
     setIsEditDialogOpen(false);
     setEditingVoluntario(null);
     toast.success("Voluntário atualizado com sucesso!");
+    
+    // Notificação em tempo real
+    window.dispatchEvent(new CustomEvent('broadcastNotification', {
+      detail: {
+        title: "👥 Voluntário Atualizado",
+        message: `Dados de ${editingVoluntario.nome} foram atualizados.`,
+        type: "info",
+        from: "Sistema"
+      }
+    }));
   };
 
   const handleDelete = (id: number) => {
     if (confirm("Tem certeza que deseja excluir este voluntário?")) {
+      const voluntarioRemovido = voluntarios.find(v => v.id === id);
       setVoluntarios(prev => prev.filter(vol => vol.id !== id));
       toast.success("Voluntário excluído com sucesso!");
+      
+      // Notificação em tempo real
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "🗑️ Voluntário Removido",
+          message: `${voluntarioRemovido?.nome} foi removido do sistema.`,
+          type: "warning",
+          from: "Sistema"
+        }
+      }));
     }
   };
 

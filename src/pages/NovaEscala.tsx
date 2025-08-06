@@ -151,9 +151,19 @@ const NovaEscala = () => {
 
       // Adicionar escala ao contexto
       addEscala(escalaData);
+      
+      // Enviar notificação em tempo real para todos os usuários
+      window.dispatchEvent(new CustomEvent('broadcastNotification', {
+        detail: {
+          title: "📅 Nova Escala Criada",
+          message: `Escala para ${selectedCulto} do dia ${format(date, 'dd/MM/yyyy', { locale: ptBR })} foi criada.`,
+          type: "info",
+          from: "Sistema"
+        }
+      }));
 
       toast.success("Escala criada com sucesso!");
-      navigate("/");
+      navigate("/admin/escalas");
     } catch (error) {
       console.error("Erro ao criar escala:", error);
       toast.error("Erro ao criar escala. Tente novamente.");

@@ -7,7 +7,8 @@ import {
   Calendar, 
   RotateCcw, 
   Settings,
-  Menu
+  Menu,
+  BarChart3
 } from "lucide-react";
 import { useState } from "react";
 
@@ -21,6 +22,7 @@ export const Navigation = () => {
     { path: "/admin/escalas", label: "Escalas", icon: Calendar },
     { path: "/admin/substituicoes", label: "Substituições", icon: RotateCcw },
     { path: "/admin/configuracoes", label: "Config", icon: Settings },
+    { path: "/admin/relatorios", label: "Relatórios", icon: BarChart3 },
   ];
 
   const isActive = (path: string) => location.pathname === path;

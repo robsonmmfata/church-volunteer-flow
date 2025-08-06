@@ -60,6 +60,8 @@ const Substituicoes = () => {
   );
 
   const handleAprovar = (id: number) => {
+    const substituicaoAprovada = substituicoes.find(s => s.id === id);
+    
     setSubstituicoes(prev => 
       prev.map(sub => 
         sub.id === id 
@@ -71,9 +73,21 @@ const Substituicoes = () => {
       title: "Substituição aprovada",
       description: "Substituição aprovada com sucesso!",
     });
+    
+    // Enviar notificação em tempo real
+    window.dispatchEvent(new CustomEvent('broadcastNotification', {
+      detail: {
+        title: "✅ Substituição Aprovada",
+        message: `Substituição de ${substituicaoAprovada?.voluntarioOriginal} foi aprovada.`,
+        type: "success",
+        from: "Sistema"
+      }
+    }));
   };
 
   const handleRejeitar = (id: number) => {
+    const substituicaoRejeitada = substituicoes.find(s => s.id === id);
+    
     setSubstituicoes(prev => 
       prev.map(sub => 
         sub.id === id 
@@ -86,6 +100,16 @@ const Substituicoes = () => {
       description: "Substituição rejeitada",
       variant: "destructive"
     });
+    
+    // Enviar notificação em tempo real
+    window.dispatchEvent(new CustomEvent('broadcastNotification', {
+      detail: {
+        title: "❌ Substituição Rejeitada",
+        message: `Substituição de ${substituicaoRejeitada?.voluntarioOriginal} foi rejeitada.`,
+        type: "warning",
+        from: "Sistema"
+      }
+    }));
   };
 
   const getStatusBadge = (status: string) => {
