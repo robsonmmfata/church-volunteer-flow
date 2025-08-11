@@ -54,11 +54,30 @@ const Login = () => {
           break;
       }
     } else {
-      toast({
-        title: "Erro no login",
-        description: "Email, senha ou tipo de usuário incorretos.",
-        variant: "destructive",
-      });
+      // Feedback específico se o email existir mas ainda não estiver verificado
+      try {
+        const users = JSON.parse(localStorage.getItem('users') || '[]');
+        const u = users.find((x: any) => x.email === loginData.email && x.tipo === loginData.tipo);
+        if (u && !u.verified) {
+          toast({
+            title: 'Confirme seu e-mail para acessar',
+            description: 'Enviamos um link de confirmação. Caso não tenha recebido, cadastre-se novamente para gerar um novo link.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Erro no login',
+            description: 'Email, senha ou tipo de usuário incorretos.',
+            variant: 'destructive',
+          });
+        }
+      } catch {
+        toast({
+          title: 'Erro no login',
+          description: 'Email, senha ou tipo de usuário incorretos.',
+          variant: 'destructive',
+        });
+      }
     }
   };
 
@@ -69,27 +88,15 @@ const Login = () => {
     
     if (success) {
       toast({
-        title: "Cadastro realizado com sucesso!",
-        description: "Você já está logado.",
+        title: 'Cadastro realizado! Verifique seu e-mail.',
+        description: 'Enviamos um link de confirmação para o seu endereço de e-mail.',
       });
-      
-      // Redirecionar baseado no tipo de usuário
-      switch (registerData.tipo) {
-        case 'administrador':
-          navigate('/admin');
-          break;
-        case 'lider':
-          navigate('/lider/dashboard');
-          break;
-        case 'voluntario':
-          navigate('/voluntario/dashboard');
-          break;
-      }
+      navigate(`/verificacao-enviada?email=${encodeURIComponent(registerData.email)}`);
     } else {
       toast({
-        title: "Erro no cadastro",
-        description: "Tente novamente.",
-        variant: "destructive",
+        title: 'Erro no cadastro',
+        description: 'E-mail já cadastrado ou erro ao enviar confirmação.',
+        variant: 'destructive',
       });
     }
   };

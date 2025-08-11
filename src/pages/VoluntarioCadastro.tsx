@@ -9,15 +9,19 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const VoluntarioCadastro = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     nome: "",
     sexo: "",
     celular: "",
     email: "",
+    senha: "",
+    confirmarSenha: "",
     conjuge: "",
     celularConjuge: "",
     disponibilidade: {
@@ -34,25 +38,40 @@ const VoluntarioCadastro = () => {
     setLoading(true);
 
     try {
-      // Simulação de envio para webhook N8N
-      console.log("Enviando cadastro:", formData);
-      
-      // Simular delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success("Cadastro realizado com sucesso! Em breve entraremos em contato.");
-      
-      // Notificação em tempo real
-      window.dispatchEvent(new CustomEvent('broadcastNotification', {
-        detail: {
-          title: "🆕 Novo Cadastro",
-          message: `${formData.nome} se cadastrou como voluntário.`,
-          type: "info",
-          from: "Sistema"
-        }
-      }));
-      
-      navigate("/login");
+      if (!formData.senha || formData.senha.length < 6) {
+        toast.error("A senha deve ter no mínimo 6 caracteres.");
+        setLoading(false);
+        return;
+      }
+      if (formData.senha !== formData.confirmarSenha) {
+        toast.error("As senhas não coincidem.");
+        setLoading(false);
+        return;
+      }
+
+      const ok = await register({
+        nome: formData.nome,
+        email: formData.email,
+        password: formData.senha,
+        tipo: 'voluntario',
+        telefone: formData.celular,
+      });
+
+      if (ok) {
+        toast.success("Cadastro criado! Verifique seu e-mail para confirmar.");
+        // Notificação em tempo real
+        window.dispatchEvent(new CustomEvent('broadcastNotification', {
+          detail: {
+            title: "🆕 Novo Cadastro",
+            message: `${formData.nome} se cadastrou como voluntário.`,
+            type: "info",
+            from: "Sistema"
+          }
+        }));
+        navigate(`/verificacao-enviada?email=${encodeURIComponent(formData.email)}`);
+      } else {
+        toast.error("E-mail já cadastrado. Tente fazer login ou use outro e-mail.");
+      }
     } catch (error) {
       toast.error("Erro ao realizar cadastro. Tente novamente.");
     } finally {
@@ -151,6 +170,30 @@ const VoluntarioCadastro = () => {
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Senha */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="senha">Senha *</Label>
+                  <Input
+                    id="senha"
+                    type="password"
+                    value={formData.senha}
+                    onChange={(e) => handleInputChange("senha", e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmarSenha">Confirmar Senha *</Label>
+                  <Input
+                    id="confirmarSenha"
+                    type="password"
+                    value={formData.confirmarSenha}
+                    onChange={(e) => handleInputChange("confirmarSenha", e.target.value)}
                     required
                   />
                 </div>

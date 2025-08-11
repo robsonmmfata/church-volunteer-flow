@@ -18,6 +18,8 @@ import NovaEscala from "./pages/NovaEscala";
 import Substituicoes from "./pages/Substituicoes";
 import Configuracoes from "./pages/Configuracoes";
 import VoluntarioCadastro from "./pages/VoluntarioCadastro";
+import VerificarEmail from "./pages/VerificarEmail";
+import VerificacaoEnviada from "./pages/VerificacaoEnviada";
 import VoluntarioDashboard from "./pages/VoluntarioDashboard";
 import LiderDashboard from "./pages/LiderDashboard";
 import PerfilUsuario from "./pages/PerfilUsuario";
@@ -59,6 +61,8 @@ const App = () => (
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/voluntario/cadastro" element={<VoluntarioCadastro />} />
+              <Route path="/verificar-email" element={<VerificarEmail />} />
+              <Route path="/verificacao-enviada" element={<VerificacaoEnviada />} />
               
               {/* Área do voluntário - protegida */}
               <Route 
